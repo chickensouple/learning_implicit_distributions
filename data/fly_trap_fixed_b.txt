@@ -1,0 +1,11 @@
+default
+===================
+Mean Reward: -4542.4752
+Std Reward: 1159.8583406
+Mean Num Nodes: 2774.36
+Std Num Nodes: 717.777563316
+Mean Num Collision Checks: 1724.5
+Std Num Collision Checks: 438.646885319
+
+
+

@@ -91,6 +91,7 @@ class RRTConnectEnv(object):
         reward += -(len(self.tree.node_states) - prev_node_states)
         reward += -(self.num_collision_checks - prev_num_coll_checks)
 
+
         return self.node_feat, reward, self.found_path, None
 
     def show(self):
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     from tqdm import tqdm
     import time
 
-    l2_data_dict = generate_data('fly_trap_fixed', dubins=False)
+    l2_data_dict = generate_data('fly_trap_fixed_b', dubins=False)
     l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
     l2_goal = l2_goal_region
     l2_config = {'collision_check': map_collision_check,
@@ -123,7 +124,8 @@ if __name__ == '__main__':
               'precomputed': map_obst_precompute(l2_data_dict['map'])}
 
     rrt = RRTConnectEnv(l2_config, l2_data_dict)
-    policy = BallTreePolicy()
+    # policy = BallTreePolicy()
+    policy = DynamicDomainPolicy()
     # policy = DefaultPolicy()
     # policy = Policy(l2_config['num_feat'])
 

@@ -156,10 +156,11 @@ def generate_data(map_type, dubins=False):
         [start, goal] = __gen_path(arr, dubins)
     elif map_type == 'fly_trap':
         arr, start, goal = generate_fly_trap(21, 17)
-    elif map_type == 'fly_trap_fixed':
-        # arr, start, goal = generate_fly_trap_fixed(13, 11)
+    elif map_type == 'fly_trap_fixed_a':
         arr, start, goal = generate_fly_trap_fixed(51, 11) # Env A
-        # arr, start, goal = generate_fly_trap_fixed(17, 15) # Env B
+    elif map_type == 'fly_trap_fixed_b':
+        # arr, start, goal = generate_fly_trap_fixed(13, 11)
+        arr, start, goal = generate_fly_trap_fixed(17, 15) # Env B
     else:
         raise Exception('Not a valid map type')
     data_dict = {'map': arr, 'start': start, 'goal': goal}

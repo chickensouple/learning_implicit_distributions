@@ -46,10 +46,12 @@ if __name__ == '__main__':
     from utils import *
 
     num_feats = 1
-    policy = DefaultPolicy()
+    # policy = DefaultPolicy()
+    policy = BallTreePolicy()
+    # policy = DynamicDomainPolicy()
     rrtprob = RunEnvironment(policy)
 
-    l2_data_dict = generate_data('fly_trap_fixed')
+    l2_data_dict = generate_data('fly_trap_fixed_b')
     l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
     l2_goal = l2_goal_region
     l2_config = {'collision_check': map_collision_check,
@@ -58,12 +60,12 @@ if __name__ == '__main__':
               'dist': l2_dist,
               'goal_region': l2_goal,
               # 'feat': get_feat_flytrap,
-              'feat': get_feat_default,
+              'feat': get_feat_flytrap,
               'num_feat': num_feats,
               'precomputed': map_obst_precompute(l2_data_dict['map'])}
 
-    # env = RRTConnectEnv(l2_config, l2_data_dict)
-    env = RRTBiEnv(l2_config, l2_data_dict)
+    env = RRTConnectEnv(l2_config, l2_data_dict)
+    # env = RRTBiEnv(l2_config, l2_data_dict)
 
     rrtprob.run(env, show=True)
     env.show()
