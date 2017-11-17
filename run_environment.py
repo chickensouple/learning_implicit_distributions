@@ -26,7 +26,7 @@ class RunEnvironment(object):
             reward_list.append(reward)
 
 
-            if show and i - last_i > 100:
+            if show and i - last_i > 500:
                 last_i = i
                 rrt_env.show()
                 plt.show(block=False)
@@ -47,10 +47,11 @@ if __name__ == '__main__':
 
     num_feats = 1
     # policy = DefaultPolicy()
-    policy = BallTreePolicy()
-    # policy = DynamicDomainPolicy()
+    # policy = BallTreePolicy()
+    policy = DynamicDomainPolicy()
     rrtprob = RunEnvironment(policy)
 
+    np.random.seed(2)
     l2_data_dict = generate_data('fly_trap_fixed_b')
     l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
     l2_goal = l2_goal_region

@@ -75,6 +75,7 @@ def generate_fly_trap(size, trap_size):
     arr[idx1:idx2, idx1:idx2] = 0
     arr[idx1+1:idx2-1, idx1+1:idx2-1] = 1
 
+
     # creating hole in trap
     loc1 = np.random.randint(idx1+1, idx2-1)
     loc2 = np.random.choice([idx1, idx2-1])
@@ -95,7 +96,7 @@ def generate_fly_trap(size, trap_size):
     return arr, start, goal
 
 
-def generate_fly_trap_fixed(size, trap_size):
+def generate_fly_trap_fixed(size, trap_size, test=False):
     arr = np.ones((size, size), dtype=np.int8)
 
     # generate trap
@@ -106,10 +107,18 @@ def generate_fly_trap_fixed(size, trap_size):
 
 
     # generate tunnel
-    middle = int((idx1 + idx2)/2)
-    arr[middle-1, idx1+2:idx2] = 0
-    arr[middle+1, idx1+2:idx2] = 0
-    arr[middle, idx2-1] = 1
+    if test:
+        middle = int((idx1 + idx2)/2)
+        middle = int((middle + idx1)/2) + 1
+
+        arr[idx1+2:idx2, middle-1] = 0
+        arr[idx1+2:idx2, middle+1] = 0
+        arr[idx2-1, middle] = 1
+    else:
+        middle = int((idx1 + idx2)/2)
+        arr[middle-1, idx1+2:idx2] = 0
+        arr[middle+1, idx1+2:idx2] = 0
+        arr[middle, idx2-1] = 1
 
     # creating start and goal positions
     start = __gen_rand_point(arr)
@@ -160,6 +169,10 @@ def generate_data(map_type, dubins=False):
         arr, start, goal = generate_fly_trap_fixed(51, 11) # Env A
     elif map_type == 'fly_trap_fixed_b':
         arr, start, goal = generate_fly_trap_fixed(17, 15) # Env B
+    elif map_type == 'fly_trap_fixed_a_test':
+        arr, start, goal = generate_fly_trap_fixed(51, 11, test=True) # Env A
+    elif map_type == 'fly_trap_fixed_b_test':
+        arr, start, goal = generate_fly_trap_fixed(17, 15, test=True) # Env A
     else:
         raise Exception('Not a valid map type')
     data_dict = {'map': arr, 'start': start, 'goal': goal}
@@ -171,7 +184,7 @@ if __name__ == '__main__':
     while 1:
         plt.cla()
         np.random.seed(0)
-        data_dict = generate_data('fly_trap_fixed')
+        data_dict = generate_data('fly_trap_fixed_b_test')
         im = data_dict['map']
         plt.imshow(im, interpolation='nearest', 
             extent=[0, im.shape[0], 0, im.shape[1]],

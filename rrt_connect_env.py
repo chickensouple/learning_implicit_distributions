@@ -20,6 +20,7 @@ class RRTConnectEnv(object):
         self.tree = Tree()
         self.found_path = False
         self.num_collision_checks = 0
+        self.samples_drawn = 0
 
         self.tree.insert_node(self.map_info['start'], [self.map_info['start']])
 
@@ -73,7 +74,6 @@ class RRTConnectEnv(object):
         if self.found_path:
             return self.node_feat, 0, self.found_path, None
 
-
         prev_num_coll_checks = self.num_collision_checks
         prev_node_states = len(self.tree.node_states)
         if action == 1:
@@ -88,6 +88,7 @@ class RRTConnectEnv(object):
         reward += -(len(self.tree.node_states) - prev_node_states)
         reward += -(self.num_collision_checks - prev_num_coll_checks)
 
+        self.samples_drawn += 1
 
         return self.node_feat, reward, self.found_path, None
 
@@ -97,6 +98,20 @@ class RRTConnectEnv(object):
             self.tree.show(im=self.map_info['map'], goal=self.map_info['goal'], path_idx=len(self.tree.node_states)-1)
         else:
             self.tree.show(im=self.map_info['map'], goal=self.map_info['goal'])
+
+    def get_path(self):
+        if not self.found_path:
+            return [], None
+
+        path = self.tree.path_to_root(len(self.tree.node_states)-1)
+        path_len = 0
+
+        for i in range(1, len(path)):
+            node1 = self.tree.node_states[path[i-1]]
+            node2 = self.tree.node_states[path[i]]
+
+            path_len += self.config['dist'](np.array([node1]), node2)
+        return path, path_len
 
 
 if __name__ == '__main__':

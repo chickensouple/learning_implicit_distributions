@@ -16,7 +16,6 @@ from policy import *
 from baseline import Baseline
 from rrt_connect_env import RRTConnectEnv
 
-
 gamma = 1
 
 def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
@@ -32,7 +31,6 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
     for env in env_list:
         stats_list.append(RunningStats(200000))
         avg_reward_list.append(RunningStats(niter))
-
 
     run_env = RunEnvironment(policy)
     print("Calculating starting baseline")
@@ -142,8 +140,10 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
 
     if args.env == 'fly_trap_fixed_a':
-        num_feats = 1
-        feat_func = get_feat_flytrap
+        # num_feats = 1
+        # feat_func = get_feat_flytrap
+        num_feats = 2
+        feat_func = get_feat_flytrap2
 
         np.random.seed(0)
         data_dict = generate_data('fly_trap_fixed_a')
@@ -158,8 +158,10 @@ if __name__ == '__main__':
         data_dict_list = [data_dict]
         config_list = [config]
     elif args.env == 'fly_trap_fixed_b':
-        num_feats = 1
-        feat_func = get_feat_flytrap
+        # num_feats = 1
+        # feat_func = get_feat_flytrap
+        num_feats = 2
+        feat_func = get_feat_flytrap2
 
         np.random.seed(0)
         data_dict = generate_data('fly_trap_fixed_b')
@@ -199,7 +201,9 @@ if __name__ == '__main__':
     for i, (data_dict, config) in enumerate(zip(data_dict_list, config_list)):
         env = RRTConnectEnv(config, data_dict)
         env_list.append(env)
-        baseline_list.append(Baseline(config['num_feat'], name='baseline' + str(i), sess=sess))
+        if args.type == 'train':
+
+            baseline_list.append(Baseline(config['num_feat'], name='baseline' + str(i), sess=sess))
 
     np.random.seed(int(time.time()))
 

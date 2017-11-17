@@ -1,11 +1,20 @@
 default
 ===================
-Mean Reward: -22859.2536
-Std Reward: 9584.9131529
-Mean Num Nodes: 653.69
-Std Num Nodes: 205.223034526
-Mean Num Collision Checks: 21981.54
-Std Num Collision Checks: 9291.22113979
+Mean Reward: -22303.4206
+Std Reward: 9766.38496602
+Mean Num Nodes: 643.36
+Std Num Nodes: 212.118387699
+Mean Num Collision Checks: 21441.54
+Std Num Collision Checks: 9464.82014559
+Mean Num Path Length: 89.5632590611
+Std Num Path Length: 15.3123161654
 
-
+model a1
+===================
+Mean Reward: -3637.6231
+Std Reward: 1325.33462622
+Mean Num Nodes: 722.55
+Std Num Nodes: 222.461204483
+Mean Num Collision Checks: 2600.07
+Std Num Collision Checks: 990.378324228
 

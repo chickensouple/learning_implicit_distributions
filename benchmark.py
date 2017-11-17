@@ -14,12 +14,17 @@ def test(env, policy, policyname, niter, file):
     rewards = []
     num_nodes = []
     num_collision_checks = []
+    path_lengths = []
+    num_samples = []
     for i in tqdm(range(niter)):
         _, _, reward = run_env.run(env)
 
         rewards.append(np.sum(reward))
         num_nodes.append(len(env.tree.node_states))
         num_collision_checks.append(env.num_collision_checks)
+        _, path_len = env.get_path()
+        path_lengths.append(path_len)
+        num_samples.append(env.samples_drawn)
 
     print(policyname)
     print("===================")
@@ -29,6 +34,10 @@ def test(env, policy, policyname, niter, file):
     print("Std Num Nodes: " + str(np.std(num_nodes)))
     print("Mean Num Collision Checks: " + str(np.mean(num_collision_checks)))
     print("Std Num Collision Checks: " + str(np.std(num_collision_checks)))
+    print("Mean Path Length: " + str(np.mean(path_lengths)))
+    print("Std Path Length: " + str(np.std(path_lengths)))
+    print("Mean Num Samples: " + str(np.mean(num_samples)))
+    print("Std Num Samples: " + str(np.std(num_samples)))
 
     file.write(policyname + "\n")
     file.write("===================" + "\n")
@@ -38,6 +47,10 @@ def test(env, policy, policyname, niter, file):
     file.write("Std Num Nodes: " + str(np.std(num_nodes)) + "\n")
     file.write("Mean Num Collision Checks: " + str(np.mean(num_collision_checks)) + "\n")
     file.write("Std Num Collision Checks: " + str(np.std(num_collision_checks)) + "\n")
+    file.write("Mean Path Length: " + str(np.mean(path_lengths)) + "\n")
+    file.write("Std Path Length: " + str(np.std(path_lengths)) + "\n")
+    file.write("Mean Num Samples: " + str(np.mean(num_samples)) + "\n")
+    file.write("Std Num Samples: " + str(np.std(num_samples)) + "\n")
     file.write("\n\n\n")
 
 
@@ -56,7 +69,7 @@ if __name__ == '__main__':
         help='output file to write to')
     parser.add_argument('--env', dest='env', action='store',
         required=True,
-        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b'],
+        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'fly_trap_fixed_a_test', 'fly_trap_fixed_b_test', 'empty'],
         help="environment type")
     args = parser.parse_args(sys.argv[1:])
 
