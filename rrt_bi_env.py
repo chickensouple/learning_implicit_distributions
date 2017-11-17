@@ -12,14 +12,11 @@ class ExtendState(object):
 class RRTBiEnv(object):
     def __init__(self, config, map_info):
         self.config = config
-        self.maxiter = 15000
         self.map_info = map_info
         self.reset()
 
-
     def reset(self):
         self.forward_tree = Tree()
-        self.backward_tree = Tree()
 
         self.found_path = False
         self.num_collisions = 0
@@ -37,7 +34,7 @@ class RRTBiEnv(object):
 
         return self.node_feat
 
-    def __run_rrt(self, rand_node):
+    def __run(self, rand_node):
 
         curr_tree = self.trees[self.tree_idx]
         other_tree = self.trees[1 - self.tree_idx]
@@ -87,7 +84,7 @@ class RRTBiEnv(object):
         prev_node_states = len(self.forward_tree.node_states) + len(self.backward_tree.node_states)
 
         if action == 1:
-            self.__run_rrt(self.rand_node)
+            self.__run(self.rand_node)
 
         new_node_states = len(self.forward_tree.node_states) + len(self.backward_tree.node_states)
 

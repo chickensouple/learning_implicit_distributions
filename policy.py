@@ -71,7 +71,7 @@ class Policy(object):
                 scale=True,
                 is_training=self.is_train)
 
-            self.logit = tf.contrib.layers.fully_connected(layer2,
+            self.unmodified_logit = tf.contrib.layers.fully_connected(layer2,
                 2,
                 activation_fn=None,
                 biases_initializer=None,
@@ -82,8 +82,8 @@ class Policy(object):
             min_prob = 0.05
             softmax_min_prob = np.log(min_prob/(1.0-min_prob))
 
-            accept_logit = tf.gather(self.logit, [0], axis=1)
-            reject_logit = tf.gather(self.logit, [1], axis=1)
+            accept_logit = tf.gather(self.unmodified_logit, [0], axis=1)
+            reject_logit = tf.gather(self.unmodified_logit, [1], axis=1)
 
             accept_logit = tf.maximum(accept_logit, reject_logit + softmax_min_prob)
             reject_logit = tf.maximum(reject_logit, accept_logit + softmax_min_prob)
@@ -108,18 +108,12 @@ class Policy(object):
             concat_indices = tf.stack([row_indices, self.selected_action], axis=1)
 
             # negative sign to do gradient ascent instead of descent
-            # reinforcement learning loss
-            entropy_coeff = 0.
-            prob_coeff = 0.
             selected_probs = tf.gather_nd(self.prob, concat_indices)
             selected_log_probs = tf.gather_nd(self.log_probs, concat_indices)
-            self.rloss = -tf.reduce_mean(selected_log_probs * self.advantage)
-            self.entropy_loss = -tf.reduce_mean(selected_probs * selected_log_probs)
-            self.prob_loss = tf.reduce_mean(tf.gather(self.prob, [1], axis=1))
-            self.total_loss = self.rloss + self.entropy_loss * entropy_coeff + self.prob_loss * prob_coeff
+            self.loss = -tf.reduce_mean(selected_log_probs * self.advantage)
 
             self.network_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='policy')
-            self.grads = tf.gradients(self.total_loss, self.network_vars)
+            self.grads = tf.gradients(self.loss, self.network_vars)
 
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(update_ops):
@@ -141,14 +135,8 @@ class Policy(object):
             self.advantage: advantage,
             self.is_train: np.array(True)}
 
-        # loss, _ = self.sess.run([self.total_loss, self.optimize], feed_dict=fd)
-        total_loss, rloss, entropy_loss, prob_loss, _ = self.sess.run([self.total_loss, 
-            self.rloss, 
-            self.entropy_loss, 
-            self.prob_loss, 
-            self.optimize], 
-            feed_dict=fd)
-        return total_loss, rloss, entropy_loss, prob_loss
+        loss, _ = self.sess.run([self.loss, self.optimize], feed_dict=fd)
+        return loss
 
     def save_model(self, filename):
         saver = tf.train.Saver()

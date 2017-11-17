@@ -3,8 +3,9 @@ import numpy as np
 
 
 class Baseline(object):
-    def __init__(self, num_feats, sess=None):
+    def __init__(self, num_feats, name='baseline', sess=None):
         self.num_feats = num_feats
+        self.name = name
 
         if sess == None:
             self.sess = tf.InteractiveSession()
@@ -12,11 +13,11 @@ class Baseline(object):
         else:
             self.sess = sess
 
-        self._build_model(num_feats)
+        self._build_model(name, num_feats)
 
 
-    def _build_model(self, num_feats):
-        with tf.variable_scope('baseline'):
+    def _build_model(self, name, num_feats):
+        with tf.variable_scope(name):
             self.state_input = tf.placeholder(tf.float32, [None, num_feats], name='state_input')
             
             layer1 = tf.contrib.layers.fully_connected(self.state_input, 

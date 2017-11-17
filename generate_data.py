@@ -159,11 +159,11 @@ def generate_data(map_type, dubins=False):
     elif map_type == 'fly_trap_fixed_a':
         arr, start, goal = generate_fly_trap_fixed(51, 11) # Env A
     elif map_type == 'fly_trap_fixed_b':
-        # arr, start, goal = generate_fly_trap_fixed(13, 11)
         arr, start, goal = generate_fly_trap_fixed(17, 15) # Env B
     else:
         raise Exception('Not a valid map type')
     data_dict = {'map': arr, 'start': start, 'goal': goal}
+    data_dict['precomputed'] = map_obst_precompute(arr)
     return data_dict
 
 

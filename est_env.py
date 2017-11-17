@@ -4,13 +4,7 @@ import tensorflow as tf
 import numpy as np
 from utils import *
 
-class ExtendState(object):
-    TRAPPED = 0
-    ADVANCED = 1
-    REACHED = 2
-
-
-class RRTConnectEnv(object):
+class ESTEnv(object):
     def __init__(self, config, map_info):
         self.config = config
         self.map_info = map_info
@@ -77,7 +71,7 @@ class RRTConnectEnv(object):
         prev_num_coll_checks = self.num_collision_checks
         prev_node_states = len(self.tree.node_states)
         if action == 1:
-            self.__run(self.rand_node)
+            self.__run_rrt(self.rand_node)
 
         self.rand_node = self.config['random_sample'](self.map_info)
         self.node_feat = self.config['feat'](self.rand_node, 
@@ -117,11 +111,12 @@ if __name__ == '__main__':
               'dist': l2_dist,
               'goal_region': l2_goal,
               'feat': get_feat_flytrap,
-              'num_feat': 1}
+              'num_feat': 1,
+              'precomputed': map_obst_precompute(l2_data_dict['map'])}
 
     rrt = RRTConnectEnv(l2_config, l2_data_dict)
     # policy = BallTreePolicy()
-    policy = DynamicDomainPolicy()
+    # policy = DynamicDomainPolicy()
     # policy = DefaultPolicy()
     # policy = Policy(l2_config['num_feat'])
 

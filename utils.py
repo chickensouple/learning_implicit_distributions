@@ -220,44 +220,35 @@ class RunningStats(object):
             self.num_filled = self.N
             self.vals = self.vals[diff:]
 
-
     def get_mean(self):
         return np.mean(self.vals[:self.num_filled])
         
     def get_std(self):
         return np.std(self.vals[:self.num_filled])
 
-class RunningAverage(object):
-    def __init__(self, N):
-        self.N = N
-        self.vals = []
-        self.num_filled = 0
+    def get_mean_n(self, n):
+        start = max(0, self.num_filled-n)
+        return np.mean(self.vals[start:self.num_filled])
 
-    def push(self, val):
-        if self.num_filled == self.N:
-            self.vals.pop(0)
-            self.vals.append(val)
+def get_disc_rewards(rewards, gamma):
+    disc_rewards = np.zeros(rewards.shape)
+    n = len(disc_rewards) - 1
+    for idx, r in enumerate(reversed(rewards)):
+        if idx == 0:
+            disc_rewards[n-idx] = r
         else:
-            self.vals.append(val)
-            self.num_filled += 1
+            disc_rewards[n-idx] = disc_rewards[n-idx+1] * gamma + r
+    return disc_rewards
 
-    def get(self):
-        return float(sum(self.vals)) / self.num_filled
 
 
 if __name__ == '__main__':
 
-    rewards = np.array([1, 2, 3, 4, 5, 6.])
-    print get_disc_rewards(rewards, 0.1)
+    stats = RunningStats(20)
+    nums = [10, 1, 1, 1, 1, 1, 1]
+
+    for num in nums:
+        stats.push(num)
+        print("mean: " + str(stats.get_mean_n(3)))
 
 
-    # rand = np.array([4., 2., 0.6])
-    # closest = np.array([3., 6.2, -3.8])
-
-    # # path = dubins.path_sample(closest, rand, 1., 0.2)
-    # # print path
-    # # print dubins.path_length(closest, rand, 1.)
-    # path, length = dubins_new_config(rand, closest)
-    # # path, length = dubins_new_config(rand, closest, extend_length=np.Inf)
-    # print length
-    # print path

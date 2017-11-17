@@ -52,7 +52,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', dest='output', 
         action='store', 
         type=str, 
-        default='data/output.txt',
+        default='results/output.txt',
         help='output file to write to')
     parser.add_argument('--env', dest='env', action='store',
         required=True,
@@ -67,10 +67,12 @@ if __name__ == '__main__':
     policy1 = DefaultPolicy()
     policy2 = BallTreePolicy()
     policy3 = DynamicDomainPolicy()
-
+    policy4 = Policy(1)
+    policy4.load_model('data/model_envA1.ckpt')
 
     policies = [\
-        [policy1, 'default'],
+        # [policy1, 'default'],
+        [policy4, 'model a1']
         # [policy2, 'balltree'],
         # [policy3, 'dynamicdomain']
     ]
