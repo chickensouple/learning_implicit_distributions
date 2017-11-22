@@ -1,11 +1,67 @@
+======================================
+==== TRAIN ===========================
+======================================
 default
 ===================
-Mean Reward: -4542.4752
-Std Reward: 1159.8583406
-Mean Num Nodes: 2774.36
-Std Num Nodes: 717.777563316
-Mean Num Collision Checks: 1724.5
-Std Num Collision Checks: 438.646885319
+Mean Reward: -4437.8339
+Std Reward: 1116.19377496
+Mean Num Nodes: 2705.17
+Std Num Nodes: 671.800745087
+Mean Num Collision Checks: 1690.09
+Std Num Collision Checks: 441.581999067
+Mean Path Length: 35.7759374701
+Std Path Length: 2.80790927591
+Mean Num Samples: 4357.39
+Std Num Samples: 1105.85120966
+
+
+model_b2
+===================
+Mean Reward: -3654.8171
+Std Reward: 1053.29368365
+Mean Num Nodes: 1298.24
+Std Num Nodes: 352.792945508
+Mean Num Collision Checks: 2271.4
+Std Num Collision Checks: 680.781859335
+Mean Path Length: 35.0608323301
+Std Path Length: 2.35451033165
+Mean Num Samples: 8617.71
+Std Num Samples: 2574.8473908
+
+
+======================================
+==== TEST ============================
+======================================
+default
+===================
+Mean Reward: -5022.4809
+Std Reward: 1206.55064402
+Mean Num Nodes: 3128.78
+Std Num Nodes: 751.987999638
+Mean Num Collision Checks: 1845.34
+Std Num Collision Checks: 454.791781368
+Mean Path Length: 40.2470803252
+Std Path Length: 2.14454318133
+Mean Num Samples: 4936.09
+Std Num Samples: 1194.95185757
+
+
+model_b2
+===================
+Mean Reward: -4493.8835
+Std Reward: 1197.65747216
+Mean Num Nodes: 1639.83
+Std Num Nodes: 430.172734027
+Mean Num Collision Checks: 2746.8
+Std Num Collision Checks: 747.729148823
+Mean Path Length: 39.769148935
+Std Path Length: 2.26738527929
+Mean Num Samples: 10825.35
+Std Num Samples: 2999.23612733
+
+
+
+
 
 
 

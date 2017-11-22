@@ -15,6 +15,7 @@ from run_environment import RunEnvironment
 from policy import *
 from baseline import Baseline
 from rrt_connect_env import RRTConnectEnv
+from rrt_bi_env import RRTBiEnv
 
 gamma = 1
 
@@ -133,6 +134,9 @@ if __name__ == '__main__':
     parser.add_argument('--env', dest='env', action='store', type=str, default=None,
         required=True,
         choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'empty'])
+    parser.add_argument('--planner', dest='planner', action='store', type=str, 
+        default='rrt_connect',
+        choices=['rrt_connct', 'rrt_bi', 'est'])
     parser.add_argument('--type', dest='type', action='store',
         required=True,
         choices=['train', 'plot_feat', 'plot_reward'],
@@ -140,10 +144,18 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
 
     if args.env == 'fly_trap_fixed_a':
-        # num_feats = 1
-        # feat_func = get_feat_flytrap
-        num_feats = 2
-        feat_func = get_feat_flytrap2
+        
+        if args.planner == 'rrt_connect':
+            num_feats = 1
+            feat_func = get_feat_flytrap
+        elif args.planner == 'rrt_bi':
+            num_feats = 2
+            feat_func = get_feat_flytrap_bi
+
+
+
+        # num_feats = 2
+        # feat_func = get_feat_flytrap2
 
         np.random.seed(0)
         data_dict = generate_data('fly_trap_fixed_a')
@@ -158,10 +170,15 @@ if __name__ == '__main__':
         data_dict_list = [data_dict]
         config_list = [config]
     elif args.env == 'fly_trap_fixed_b':
-        # num_feats = 1
-        # feat_func = get_feat_flytrap
-        num_feats = 2
-        feat_func = get_feat_flytrap2
+        if args.planner == 'rrt_connect':
+            num_feats = 1
+            feat_funplannerc = get_feat_flytrap
+        elif args.planner == 'rrt_bi':
+            num_feats = 2
+            feat_func = get_feat_flytrap_bi
+
+        # num_feats = 2
+        # feat_func = get_feat_flytrap2
 
         np.random.seed(0)
         data_dict = generate_data('fly_trap_fixed_b')
@@ -199,7 +216,12 @@ if __name__ == '__main__':
     baseline_list = []
     env_list = []
     for i, (data_dict, config) in enumerate(zip(data_dict_list, config_list)):
-        env = RRTConnectEnv(config, data_dict)
+        if args.planner == 'rrt_connect':
+            env = RRTConnectEnv(config, data_dict)
+        elif args.planner == 'rrt_bi':
+            env = RRTBiEnv(config, data_dict)
+        else:
+            raise Exception('not valid environment type')
         env_list.append(env)
         if args.type == 'train':
 

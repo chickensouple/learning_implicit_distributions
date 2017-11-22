@@ -1,0 +1,15 @@
+balltree
+===================
+Mean Reward: -2414.641
+Std Reward: 577.25739933
+Mean Num Nodes: 565.04
+Std Num Nodes: 104.166205652
+Mean Num Collision Checks: 1801.92
+Std Num Collision Checks: 470.582377061
+Mean Path Length: 39.7038931438
+Std Path Length: 2.45883073902
+Mean Num Samples: 4868.1
+Std Num Samples: 1323.58755283
+
+
+

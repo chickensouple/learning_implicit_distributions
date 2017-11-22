@@ -17,6 +17,7 @@ class RRTBiEnv(object):
 
     def reset(self):
         self.forward_tree = Tree()
+        self.backward_tree = Tree()
 
         self.found_path = False
         self.num_collisions = 0
@@ -30,7 +31,8 @@ class RRTBiEnv(object):
         self.rand_node = self.config['random_sample'](self.map_info)
         self.node_feat = self.config['feat'](self.rand_node, 
             self.trees, 
-            self.map_info)
+            self.map_info,
+            self.tree_idx)
 
         return self.node_feat
 
@@ -91,10 +93,12 @@ class RRTBiEnv(object):
 
         self.rand_node = self.config['random_sample'](self.map_info)
         self.node_feat = self.config['feat'](self.rand_node, 
-            self.trees, self.map_info)
+            self.trees, 
+            self.map_info,
+            self.tree_idx)
 
         reward = 0
-        reward += -(1) * 0.001
+        reward += -(1) * 0.01
         reward += -(new_node_states - prev_node_states)
         reward += -(self.num_collisions - prev_num_collisions)
 

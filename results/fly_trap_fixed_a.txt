@@ -1,20 +1,62 @@
+======================================
+==== TRAIN ===========================
+======================================
 default
 ===================
-Mean Reward: -22303.4206
-Std Reward: 9766.38496602
-Mean Num Nodes: 643.36
-Std Num Nodes: 212.118387699
-Mean Num Collision Checks: 21441.54
-Std Num Collision Checks: 9464.82014559
-Mean Num Path Length: 89.5632590611
-Std Num Path Length: 15.3123161654
+Mean Reward: -21678.5017
+Std Reward: 9645.88181607
+Mean Num Nodes: 629.98
+Std Num Nodes: 208.914957818
+Mean Num Collision Checks: 20836.21
+Std Num Collision Checks: 9348.78436086
+Mean Path Length: 90.4069001648
+Std Path Length: 18.1386559695
+Mean Num Samples: 21331.17
+Std Num Samples: 9553.38912958
 
 model a1
 ===================
-Mean Reward: -3637.6231
-Std Reward: 1325.33462622
-Mean Num Nodes: 722.55
-Std Num Nodes: 222.461204483
-Mean Num Collision Checks: 2600.07
-Std Num Collision Checks: 990.378324228
+Mean Reward: -3314.8394
+Std Reward: 1510.79324171
+Mean Num Nodes: 665.38
+Std Num Nodes: 254.303117559
+Mean Num Collision Checks: 2362.62
+Std Num Collision Checks: 1125.93451657
+Mean Path Length: 89.4990443806
+Std Path Length: 18.3581212281
+Mean Num Samples: 28783.94
+Std Num Samples: 13464.8601878
+
+
+
+======================================
+==== TEST ============================
+======================================
+default
+===================
+Mean Reward: -25175.0626
+Std Reward: 9594.86208961
+Mean Num Nodes: 1379.99
+Std Num Nodes: 408.871801302
+Mean Num Collision Checks: 23550.35
+Std Num Collision Checks: 9290.3387305
+Mean Path Length: 66.252788404
+Std Path Length: 23.2668515424
+Mean Num Samples: 24572.26
+Std Num Samples: 9496.08004139
+
+model a1
+===================
+Mean Reward: -5871.1819
+Std Reward: 2348.53389691
+Mean Num Nodes: 1200.8
+Std Num Nodes: 390.082888628
+Mean Num Collision Checks: 4345.09
+Std Num Collision Checks: 1917.37731339
+Mean Path Length: 59.7779572547
+Std Path Length: 22.1784185585
+Mean Num Samples: 32629.19
+Std Num Samples: 13741.5154926
+
+
 

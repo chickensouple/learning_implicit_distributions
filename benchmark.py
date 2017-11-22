@@ -26,6 +26,7 @@ def test(env, policy, policyname, niter, file):
         path_lengths.append(path_len)
         num_samples.append(env.samples_drawn)
 
+
     print(policyname)
     print("===================")
     print("Mean Reward: " + str(np.mean(rewards)))
@@ -81,11 +82,13 @@ if __name__ == '__main__':
     policy2 = BallTreePolicy()
     policy3 = DynamicDomainPolicy()
     policy4 = Policy(1)
-    policy4.load_model('data/model_envA1.ckpt')
+    # policy4.load_model('data/model_envA1.ckpt')
+    policy4.load_model('data/model_envB3.ckpt')
 
     policies = [\
         # [policy1, 'default'],
-        [policy4, 'model a1']
+        # [policy4, 'model a1'],
+        [policy4, 'model_b2']
         # [policy2, 'balltree'],
         # [policy3, 'dynamicdomain']
     ]
