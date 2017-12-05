@@ -72,33 +72,25 @@ class ESTEnv(object):
 
 
     def reset(self):
-
         self.forward_tree = Tree()
-
-        # node info is 1/w(x)
         self.forward_tree.insert_node(self.map_info['start'], 1)
-        # keeps track of sum of 1/w(x)
-        # self.total_weight = 1
-
-
         self.backward_tree = Tree()
         self.backward_tree.insert_node(self.map_info['goal'], 1)
         self.trees = [self.forward_tree, self.backward_tree]
-        self.total_weights = [1., 1.]
+        self.total_weights = [1., 1.] # running total of 1/w(x)
         self.tree_idx = 0
+        self.goal_idx = [None, None]
 
-
-        # self.tree = Tree()
         self.found_path = False
         self.num_collision_checks = 0
+        self.samples_drawn = 0
 
-
-        # self.rand_node = self.config['random_sample'](self.map_info)
         self.rand_node_idx = self._sample_node()
         self.rand_node = self.trees[self.tree_idx].node_states[self.rand_node_idx]
-        self.node_feat = self.config['feat'](self.rand_node, 
+        self.node_feat = self.config['feat'](self.rand_node_idx, 
             self.trees, 
-            self.map_info)
+            self.map_info,
+            self.tree_idx)
 
         return self.node_feat
 
@@ -131,11 +123,7 @@ class ESTEnv(object):
             # check if forward tree has reached
             if self.tree_idx == 0 and self.config['goal_region'](new_node, self.map_info['goal']):
                 self.found_path = True
-                break
-
-            # check if backward tree has reached
-            if self.tree_idx == 1 and np.linalg.norm(new_node - self.map_info['start']) < 1e-1:
-                self.found_path = True
+                self.goal_idx[0] = len(tree.node_states)-1
                 break
 
             # try to link trees
@@ -152,9 +140,11 @@ class ESTEnv(object):
             other_tree.insert_node(new_other_node, node_info=1, parent_idx=closest_idx)
             self._compute_and_update_w(new_other_node, neighbor_idx, 1-self.tree_idx)
 
-
             if np.linalg.norm(new_node - new_other_node) < 1e-1:
                 self.found_path = True
+                self.goal_idx[1 - self.tree_idx] = len(other_tree.node_states) - 1
+                self.goal_idx[self.tree_idx] = len(tree.node_states) - 1
+
                 break
 
 
@@ -169,20 +159,48 @@ class ESTEnv(object):
             self.__run()
         self.tree_idx = 1 - self.tree_idx
 
-
         new_node_states = len(self.forward_tree.node_states) + len(self.backward_tree.node_states)
 
         self.rand_node_idx = self._sample_node()
         self.rand_node = self.trees[self.tree_idx].node_states[self.rand_node_idx]
-        self.node_feat = self.config['feat'](self.rand_node, 
-            self.trees, self.map_info)
+        self.node_feat = self.config['feat'](self.rand_node_idx, 
+            self.trees, 
+            self.map_info,
+            self.tree_idx)
 
         reward = 0
         reward += -0.01
         reward += -(new_node_states - prev_node_states)
         reward += -(self.num_collision_checks - prev_num_coll_checks)
 
+
+        self.samples_drawn += 1
         return self.node_feat, reward, self.found_path, None
+
+    def get_path(self):
+        if not self.found_path:
+            raise Exception('Path not found yet')
+
+        path1_idx = self.trees[0].path_to_root(self.goal_idx[0])
+        path1_idx =  list(reversed(path1_idx))
+        path1 = [self.trees[0].node_states[i] for i in path1_idx]
+        if self.goal_idx[1] == None:
+            # only a forward path
+            path = path1
+        else:
+            path2_idx = self.trees[1].path_to_root(self.goal_idx[1])
+            path2 = [self.trees[1].node_states[i] for i in path2_idx]
+            path = path1 + path2
+
+        path_len = 0
+        for i in range(1, len(path)):
+            node1 = path[i]
+            node2 = path[i-1]
+
+            path_len += self.config['dist'](np.array([node1]), node2)
+        
+        return path, path_len
+
 
     def show(self):
         plt.cla()
@@ -211,8 +229,8 @@ if __name__ == '__main__':
               'steer': partial(holonomic_steer, extend_length=5.),
               'dist': l2_dist,
               'goal_region': l2_goal,
-              'feat': get_feat_default,
-              'num_feat': 1,
+              'feat': get_feat_flytrap_est,
+              'num_feat': 2,
               'precomputed': map_obst_precompute(l2_data_dict['map'])}
 
     rrt = ESTEnv(l2_config, l2_data_dict)
@@ -231,7 +249,7 @@ if __name__ == '__main__':
         
         idx += 1
 
-        if idx % 8000 == 0:
+        if idx % 1 == 0:
             rrt.show()
             plt.show(block=False)
             plt.pause(0.1)

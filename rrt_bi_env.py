@@ -20,7 +20,9 @@ class RRTBiEnv(object):
         self.backward_tree = Tree()
 
         self.found_path = False
-        self.num_collisions = 0
+        self.num_collision_checks = 0
+        self.samples_drawn = 0
+
 
         self.forward_tree.insert_node(self.map_info['start'])
         self.backward_tree.insert_node(self.map_info['goal'])
@@ -46,7 +48,6 @@ class RRTBiEnv(object):
 
         state, path = self.extend(closest_node, rand_node, env)
         if state == ExtendState.TRAPPED:
-            self.num_collisions += 1
             return
         else:
             new_node = path[-1]
@@ -74,23 +75,20 @@ class RRTBiEnv(object):
                 self.goal_idx[self.tree_idx] = len(curr_tree.node_states) - 1
 
                 self.found_path = True
-            elif state == ExtendState.TRAPPED:
-                self.num_collisions += 1
 
 
     def step(self, action):
         if self.found_path:
             return self.node_feat, 0, self.found_path, None
 
-        prev_num_collisions = self.num_collisions
+        prev_num_coll_checks = self.num_collision_checks
         prev_node_states = len(self.forward_tree.node_states) + len(self.backward_tree.node_states)
 
         if action == 1:
             self.__run(self.rand_node)
+
         self.tree_idx = 1 - self.tree_idx
-
         new_node_states = len(self.forward_tree.node_states) + len(self.backward_tree.node_states)
-
 
         self.rand_node = self.config['random_sample'](self.map_info)
         self.node_feat = self.config['feat'](self.rand_node, 
@@ -101,8 +99,9 @@ class RRTBiEnv(object):
         reward = 0
         reward += -(1) * 0.01
         reward += -(new_node_states - prev_node_states)
-        reward += -(self.num_collisions - prev_num_collisions)
+        reward += -(self.num_collision_checks - prev_num_coll_checks)
 
+        self.samples_drawn += 1
         return self.node_feat, reward, self.found_path, None
         
 
@@ -110,7 +109,9 @@ class RRTBiEnv(object):
         path, path_cost = self.config['steer'](node_from, node_to)
         new_node = path[-1]
 
-        if self.config['collision_check'](env, path):
+        collision, num_checks = self.config['collision_check'](env, path, True)
+        self.num_collision_checks += num_checks
+        if collision:
             return ExtendState.TRAPPED, path
 
         dist = self.config['dist'](np.array([new_node]), node_to)
@@ -129,12 +130,20 @@ class RRTBiEnv(object):
         path1 = [self.forward_tree.node_states[i] for i in path1_idx]
         if self.goal_idx[1] == None:
             # only a forward path
-            return path1
+            path = path1
         else:
-            path2_idx = self.backward_tree.path_to_root(self.goal_idx[1])
-            path2 = [self.backward_tree.node_states[i] for i in path2_idx]
-            return path1 + path2
+            path2_idx = self.trees[1].path_to_root(self.goal_idx[1])
+            path2 = [self.trees[1].node_states[i] for i in path2_idx]
+            path = path1 + path2
 
+        path_len = 0
+        for i in range(1, len(path)):
+            node1 = path[i]
+            node2 = path[i-1]
+
+            path_len += self.config['dist'](np.array([node1]), node2)
+        
+        return path, path_len
 
     def show(self):
         plt.cla()
