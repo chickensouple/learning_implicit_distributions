@@ -96,9 +96,9 @@ if __name__ == '__main__':
     policy6.load_model('data/model_envA2_bi.ckpt.480.ckpt')
 
     policies = [\
-        # [policy1, 'default'],
+        [policy1, 'default'],
         # [policy5, 'est_a2']
-        [policy6, 'rrtbi_a2']
+        # [policy6, 'rrtbi_a2']
         # [policy4, 'model a1'],
         # [policy4, 'model_b2']
         # [policy2, 'balltree'],
