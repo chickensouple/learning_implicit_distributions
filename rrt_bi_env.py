@@ -166,8 +166,9 @@ if __name__ == '__main__':
     from tqdm import tqdm
     import time
 
-    np.random.seed(0)
-    l2_data_dict = generate_data('fly_trap_fixed_a', dubins=False)
+    # np.random.seed(0)
+    # l2_data_dict = generate_data('fly_trap_fixed_a', dubins=False)
+    l2_data_dict = generate_data('fly_trap_fixed_b', dubins=False)
     l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
     l2_goal = l2_goal_region
     l2_config = {'collision_check': map_collision_check,
@@ -194,7 +195,7 @@ if __name__ == '__main__':
         
         idx += 1
 
-        if idx % 4000 == 0:
+        if idx % 10 == 0:
             rrt.show()
             plt.show(block=False)
             plt.pause(0.1)

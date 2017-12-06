@@ -184,9 +184,9 @@ if __name__ == '__main__':
     while 1:
         plt.cla()
         np.random.seed(0)
-        data_dict = generate_data('fly_trap_fixed_b_test')
+        data_dict = generate_data('fly_trap_fixed_a_test')
         im = data_dict['map']
-        plt.imshow(im, interpolation='nearest', 
+        fig = plt.imshow(im, interpolation='nearest', 
             extent=[0, im.shape[0], 0, im.shape[1]],
             origin='lower')
         goal = data_dict['goal']
@@ -204,6 +204,11 @@ if __name__ == '__main__':
             if '.npy' in input_str:
                 np.save('map.npy', arr)
                 print("saved to " + input_str)
+            if '.png' in input_str:
+                plt.axis('off')
+                fig.axes.get_xaxis().set_visible(False)
+                fig.axes.get_yaxis().set_visible(False)
+                plt.savefig(input_str, bbox_inches='tight')
 
 
 
