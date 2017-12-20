@@ -3,6 +3,8 @@ from utils import *
 from functools import partial
 from generate_data import generate_data
 from rrt_connect_env import RRTConnectEnv
+from rrt_bi_env import RRTBiEnv
+from est_env import ESTEnv
 from run_environment import RunEnvironment
 from policy import *
 import time
@@ -20,11 +22,13 @@ def test(env, policy, policyname, niter, file):
         _, _, reward = run_env.run(env)
 
         rewards.append(np.sum(reward))
-        num_nodes.append(len(env.tree.node_states))
+        # num_nodes.append(len(env.tree.node_states))
+        num_nodes.append(len(env.trees[0].node_states) + len(env.trees[1].node_states))
         num_collision_checks.append(env.num_collision_checks)
         _, path_len = env.get_path()
         path_lengths.append(path_len)
         num_samples.append(env.samples_drawn)
+
 
     print(policyname)
     print("===================")
@@ -80,15 +84,41 @@ if __name__ == '__main__':
     policy1 = DefaultPolicy()
     policy2 = BallTreePolicy()
     policy3 = DynamicDomainPolicy()
-    policy4 = Policy(1)
-    policy4.load_model('data/model_envA1.ckpt')
+    # policy4 = Policy(1)
+    # policy4.load_model('data/model_envA1.ckpt')
+    # policy4.load_model('data/model_envB3.ckpt')
+
+    # policy5 = Policy(2)
+    # policy5.load_model('data/model_envA2_est.ckpt.20.ckpt')
+    # policy5.load_model('data/model_envA2_est.ckpt.0.ckpt')
+
+    policy6 = Policy(1)
+    policy6.load_model('data/model_envA2_bi.ckpt.480.ckpt')
 
     policies = [\
-        # [policy1, 'default'],
-        [policy4, 'model a1']
+        [policy1, 'default'],
+        # [policy5, 'est_a2']
+        # [policy6, 'rrtbi_a2']
+        # [policy4, 'model a1'],
+        # [policy4, 'model_b2']
         # [policy2, 'balltree'],
         # [policy3, 'dynamicdomain']
     ]
+
+
+
+    # # for rrt_connect
+    # feat = get_feat_flytrap
+    # num_feat = 1
+
+    # # for est
+    # feat = get_feat_flytrap_est
+    # num_feat = 2
+
+    # for rrt bi
+    feat = get_feat_flytrap_bi
+    num_feat = 1
+
 
     np.random.seed(0)
     l2_data_dict = generate_data(args.env)
@@ -99,15 +129,18 @@ if __name__ == '__main__':
               'steer': holonomic_steer,
               'dist': l2_dist,
               'goal_region': l2_goal,
-              'feat': get_feat_flytrap,
-              'num_feat': 1,
+              'feat': feat,
+              'num_feat': num_feat,
               'precomputed': map_obst_precompute(l2_data_dict['map'])}
     np.random.seed(int(time.time()))
 
 
     file = open(args.output, 'w')
 
-    env = RRTConnectEnv(l2_config, l2_data_dict)
+    # env = RRTConnectEnv(l2_config, l2_data_dict)
+    # env = ESTEnv(l2_config, l2_data_dict)
+    env = RRTBiEnv(l2_config, l2_data_dict)
+
     for policy, policyname in policies:
         test(env, policy, policyname, niter, file)
 

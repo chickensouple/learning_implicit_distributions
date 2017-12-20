@@ -15,6 +15,8 @@ from run_environment import RunEnvironment
 from policy import *
 from baseline import Baseline
 from rrt_connect_env import RRTConnectEnv
+from rrt_bi_env import RRTBiEnv
+from est_env import ESTEnv
 
 gamma = 1
 
@@ -45,13 +47,23 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
             reward = get_disc_rewards(reward, gamma)
             stats.push_list(reward.tolist())
             reward = (reward - stats.get_mean()) / stats.get_std()
-            baseline.train(state_list, reward)
+
+
+            num_data = len(state_list)
+            num_batches = int(math.ceil(float(num_data) / max_batch))
+            for i in range(num_batches-1):
+                idx1 = i*max_batch
+                idx2 = (i+1)*max_batch
+                baseline.train(np.array(state_list[idx1:idx2]), np.array(reward[idx1:idx2]))
+            idx1 = (num_batches-1)*max_batch
+            baseline.train(np.array(state_list[idx1:]), np.array(reward[idx1:]))
 
     for j in range(niter):
         for env, baseline, stats, avg_reward in zip(env_list, baseline_list, stats_list, avg_reward_list):
             state_list = []
             action_list = []
             advantage_list = []
+            reward_list = []
 
             env_rewards = []
             for k in range(num_repeat):
@@ -61,27 +73,54 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
 
                 env_rewards.append(np.sum(reward))
 
+                # TODO: fix this
                 baseline_value = baseline.get_baseline(np.array(state))
                 reward = np.array(reward)
                 reward = get_disc_rewards(reward, gamma)
 
                 stats.push_list(reward.tolist())
                 reward = (reward - stats.get_mean()) / stats.get_std()
+                reward_list.extend(reward.tolist())
 
                 advantage = reward - baseline_value
                 advantage_list.extend(advantage.tolist())
-                baseline.train(np.array(state), reward)
+                # baseline.train(np.array(state), reward)
 
             avg_reward.push(np.mean(env_rewards))
 
-            batch_size = min(max_batch, len(state_list))
-            batch_idx = np.random.randint(len(state_list), size=batch_size)
-            state_list = [state_list[idx] for idx in batch_idx]
-            action_list = [action_list[idx] for idx in batch_idx]
-            advantage_list = [advantage_list[idx] for idx in batch_idx]
+            num_data = len(state_list)
+            num_batches = int(math.ceil(float(num_data) / max_batch))
 
+
+
+
+            for i in range(num_batches-1):
+                idx1 = i*max_batch
+                idx2 = (i+1)*max_batch
+                baseline.train(np.array(state_list[idx1:idx2]), np.array(reward_list[idx1:idx2]))
+            idx1 = (num_batches-1)*max_batch
+            baseline.train(np.array(state_list[idx1:]), np.array(reward_list[idx1:]))
+
+
+
+            for i in range(num_batches-1):
+                idx1 = i*max_batch
+                idx2 = (i+1)*max_batch
+                loss = policy.update(state_list[idx1:idx2], action_list[idx1:idx2], advantage_list[idx1:idx2])
+            idx1 = (num_batches-1)*max_batch
+            loss = policy.update(state_list[idx1:], action_list[idx1:], advantage_list[idx1:])
+
+
+
+            # batch_size = min(max_batch, len(state_list))
+            # batch_idx = np.random.randint(len(state_list), size=batch_size)
+            # state_list = [state_list[idx] for idx in batch_idx]
+            # action_list = [action_list[idx] for idx in batch_idx]
+            # advantage_list = [advantage_list[idx] for idx in batch_idx]
+            # reward_list = [reward_list[idx] for idx in batch_idx]
 
             loss = policy.update(state_list, action_list, advantage_list)
+
 
         iteration_str = "Iteration " + str(j) + ': '
         for avg_reward in avg_reward_list:
@@ -121,6 +160,16 @@ def plot_reward(rrtprob, savefile):
 
     plt.show()
 
+def plot_value(baseline):
+    obs = np.array([np.linspace(-10, 10, 100)]).T
+    fd = {baseline.state_input: obs, baseline.is_train: np.array(False)}
+    value = baseline.sess.run(baseline.value, feed_dict=fd)
+
+    plt.plot(obs, value)
+    plt.xlabel("feature")
+    plt.ylabel("p(accept)")
+    plt.show()
+
 
 if __name__ == '__main__':
     import argparse
@@ -133,17 +182,25 @@ if __name__ == '__main__':
     parser.add_argument('--env', dest='env', action='store', type=str, default=None,
         required=True,
         choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'empty'])
+    parser.add_argument('--planner', dest='planner', action='store', type=str, 
+        default='rrt_connect',
+        choices=['rrt_connct', 'rrt_bi', 'est'])
     parser.add_argument('--type', dest='type', action='store',
         required=True,
-        choices=['train', 'plot_feat', 'plot_reward'],
+        choices=['train', 'plot_feat', 'plot_reward', 'plot_value'],
         help="what you want the script to do")
     args = parser.parse_args(sys.argv[1:])
 
     if args.env == 'fly_trap_fixed_a':
-        # num_feats = 1
-        # feat_func = get_feat_flytrap
-        num_feats = 2
-        feat_func = get_feat_flytrap2
+        if args.planner == 'rrt_connect':
+            num_feats = 1
+            feat_func = get_feat_flytrap
+        elif args.planner == 'rrt_bi':
+            num_feats = 1
+            feat_func = get_feat_flytrap_bi
+        elif args.planner == 'est':
+            num_feats = 2
+            feat_func = get_feat_flytrap_est
 
         np.random.seed(0)
         data_dict = generate_data('fly_trap_fixed_a')
@@ -158,10 +215,15 @@ if __name__ == '__main__':
         data_dict_list = [data_dict]
         config_list = [config]
     elif args.env == 'fly_trap_fixed_b':
-        # num_feats = 1
-        # feat_func = get_feat_flytrap
-        num_feats = 2
-        feat_func = get_feat_flytrap2
+        if args.planner == 'rrt_connect':
+            num_feats = 1
+            feat_funplannerc = get_feat_flytrap
+        elif args.planner == 'rrt_bi':
+            num_feats = 1
+            feat_func = get_feat_flytrap_bi
+        elif args.planner == 'est':
+            num_feats = 2
+            feat_func = get_feat_flytrap_est
 
         np.random.seed(0)
         data_dict = generate_data('fly_trap_fixed_b')
@@ -199,9 +261,16 @@ if __name__ == '__main__':
     baseline_list = []
     env_list = []
     for i, (data_dict, config) in enumerate(zip(data_dict_list, config_list)):
-        env = RRTConnectEnv(config, data_dict)
+        if args.planner == 'rrt_connect':
+            env = RRTConnectEnv(config, data_dict)
+        elif args.planner == 'rrt_bi':
+            env = RRTBiEnv(config, data_dict)
+        elif args.planner == 'est':
+            env = ESTEnv(config, data_dict)
+        else:
+            raise Exception('not valid environment type')
         env_list.append(env)
-        if args.type == 'train':
+        if args.type == 'train' or args.type == 'plot_value':
 
             baseline_list.append(Baseline(config['num_feat'], name='baseline' + str(i), sess=sess))
 
@@ -226,6 +295,8 @@ if __name__ == '__main__':
         plot_feat(policy, store_file)
     elif args.type == 'plot_reward':
         plot_reward(policy, args.load_file)
+    elif args.type == 'plot_value':
+        plot_value(baseline_list[0])
         
 
 

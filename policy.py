@@ -115,7 +115,7 @@ class Policy(object):
             self.network_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='policy')
             self.grads = tf.gradients(self.loss, self.network_vars)
 
-            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope='policy')
             with tf.control_dependencies(update_ops):
                 self.optimize = tf.train.AdamOptimizer(1e-3).apply_gradients(zip(self.grads, self.network_vars))
 

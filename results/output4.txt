@@ -1,0 +1,15 @@
+model_b2
+===================
+Mean Reward: -4826.7057
+Std Reward: 1323.30072476
+Mean Num Nodes: 2020.69
+Std Num Nodes: 545.185247324
+Mean Num Collision Checks: 2686.96
+Std Num Collision Checks: 757.055465868
+Mean Path Length: 40.1136517566
+Std Path Length: 2.1241545341
+Mean Num Samples: 12005.57
+Std Num Samples: 3378.27449227
+
+
+

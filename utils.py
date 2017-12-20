@@ -117,6 +117,34 @@ def get_feat_flytrap2(point, tree, map_info):
     feat = np.array([tree_delta, obst_delta])
     return feat
 
+def get_feat_flytrap_bi(point, trees, map_info, curr_tree):
+    tree = trees[curr_tree]
+    # goal based features
+    goal_delta = np.linalg.norm(map_info['goal'] - point)
+
+    # tree based features
+    closest_idx = tree.closest_idx(point, l2_dist)
+    closest_node = tree.node_states[closest_idx]
+    tree_delta = np.linalg.norm(closest_node - point)
+
+    obst_delta = map_closest_obstacle(map_info['precomputed'], closest_node)
+
+    # feat = np.array([tree_delta - obst_delta, curr_tree])
+    feat = np.array([tree_delta - obst_delta])
+    return feat
+
+def get_feat_flytrap_est(point_idx, trees, map_info, curr_tree):
+    tree = trees[curr_tree]
+
+    point = tree.node_states[point_idx]
+
+    obst_delta = map_closest_obstacle(map_info['precomputed'], point)
+
+    w = tree.node_info[point_idx]
+
+    feat = np.array([obst_delta, w])
+    return feat
+
 
 def get_feat_dynamic_domain(point, tree, map_info):
     # tree based features
