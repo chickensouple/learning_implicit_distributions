@@ -1,8 +1,0 @@
-prefix=/home/clark/Documents/programs/learning_implicit_distributions/ros/install
-
-Name: point_cloud_capture
-Description: Description of point_cloud_capture
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/clark/Documents/programs/learning_implicit_distributions/ros/install/lib 
-Requires: 

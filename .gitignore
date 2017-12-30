@@ -4,6 +4,7 @@
 *.zip
 data
 sftp-config.json
-
+ros/build
+ros/devel
 
 

@@ -1,2 +1,0 @@
-point_cloud_capture
--DCATKIN_DEVEL_PREFIX=/home/clark/Documents/programs/learning_implicit_distributions/ros/devel -DCMAKE_INSTALL_PREFIX=/home/clark/Documents/programs/learning_implicit_distributions/ros/install -G Unix Makefiles
