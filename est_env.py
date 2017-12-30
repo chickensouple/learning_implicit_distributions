@@ -62,11 +62,11 @@ class ESTEnv(object):
             dir_len = np.linalg.norm(direction)
             if dir_len > 1e-2:
                 sample = node + (r * direction / dir_len)
-                if not self.config['collision_check'](self.map_info['map'], sample):
+                if not self.config['collision_check'](self.map_info, sample):
                     return sample
 
         sample = node + sample_ball(r)
-        while self.config['collision_check'](self.map_info['map'], sample):
+        while self.config['collision_check'](self.map_info, sample):
             sample = node + sample_ball(r)
         return sample
 
@@ -109,7 +109,7 @@ class ESTEnv(object):
                 continue
 
             path, path_cost = self.config['steer'](self.rand_node, sample)
-            collision, num_checks = self.config['collision_check'](self.map_info['map'], path, True)
+            collision, num_checks = self.config['collision_check'](self.map_info, path, True)
             self.num_collision_checks += num_checks
 
             if collision:
@@ -131,7 +131,7 @@ class ESTEnv(object):
             closest_node = other_tree.node_states[closest_idx]
 
             path, path_cost = self.config['steer'](closest_node, new_node)
-            collision, num_checks = self.config['collision_check'](self.map_info['map'], path, True)
+            collision, num_checks = self.config['collision_check'](self.map_info, path, True)
             self.num_collision_checks += num_checks
             if collision:
                 continue
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     import time
 
     np.random.seed(0)
-    l2_data_dict = generate_data('fly_trap_fixed_a', dubins=False)
+    l2_data_dict = generate_data('empty', dubins=False)
     l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
     l2_goal = l2_goal_region
     l2_config = {'collision_check': map_collision_check,

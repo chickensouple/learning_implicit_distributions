@@ -9,7 +9,6 @@ class ExtendState(object):
     ADVANCED = 1
     REACHED = 2
 
-
 class RRTConnectEnv(object):
     def __init__(self, config, map_info):
         self.config = config
@@ -35,7 +34,7 @@ class RRTConnectEnv(object):
         closest_idx = self.tree.closest_idx(rand_node, self.config['dist'])
         closest_node = self.tree.node_states[closest_idx]
 
-        state, path = self.extend(closest_node, rand_node, self.map_info['map'])
+        state, path = self.extend(closest_node, rand_node, self.map_info)
         while state == ExtendState.ADVANCED:
             new_node = path[-1]
             self.tree.insert_node(new_node, path, closest_idx)
@@ -46,7 +45,7 @@ class RRTConnectEnv(object):
 
             closest_node = new_node
             closest_idx = len(self.tree.node_states) - 1
-            state, path = self.extend(closest_node, rand_node, self.map_info['map'])
+            state, path = self.extend(closest_node, rand_node, self.map_info)
 
         if state == ExtendState.REACHED:
             new_node = path[-1]
@@ -55,11 +54,11 @@ class RRTConnectEnv(object):
                 self.found_path = True
 
 
-    def extend(self, node_from, node_to, env):
+    def extend(self, node_from, node_to, map_info):
         path, path_cost = self.config['steer'](node_from, node_to)
         new_node = path[-1]
 
-        collision, num_checks = self.config['collision_check'](env, path, True)
+        collision, num_checks = self.config['collision_check'](map_info, path, True)
         self.num_collision_checks += num_checks
         if collision:
             return ExtendState.TRAPPED, path
@@ -111,6 +110,7 @@ class RRTConnectEnv(object):
             node2 = self.tree.node_states[path[i]]
 
             path_len += self.config['dist'](np.array([node1]), node2)
+        path.reverse()
         return path, path_len
 
 
@@ -123,38 +123,81 @@ if __name__ == '__main__':
     from tqdm import tqdm
     import time
 
-    l2_data_dict = generate_data('fly_trap_fixed_b', dubins=False)
-    l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
-    l2_goal = l2_goal_region
-    l2_config = {'collision_check': map_collision_check,
-              'random_sample': l2_random_sampler,
-              'steer': holonomic_steer,
-              'dist': l2_dist,
-              'goal_region': l2_goal,
-              'feat': get_feat_flytrap,
-              'num_feat': 1}
+    # l2_data_dict = generate_data('rooms', dubins=False)
+    # l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
+    # l2_goal = l2_goal_region
+    # l2_config = {'collision_check': map_collision_check,
+    #           'random_sample': l2_random_sampler,
+    #           'steer': holonomic_steer,
+    #           'dist': l2_dist,
+    #           'goal_region': l2_goal,
+    #           'feat': get_feat_flytrap,
+    #           'num_feat': 1}
 
-    rrt = RRTConnectEnv(l2_config, l2_data_dict)
-    # policy = BallTreePolicy()
-    policy = DynamicDomainPolicy()
-    # policy = DefaultPolicy()
-    # policy = Policy(l2_config['num_feat'])
+    # rrt = RRTConnectEnv(l2_config, l2_data_dict)
+    # # policy = BallTreePolicy()
+    # policy = DynamicDomainPolicy()
+    # # policy = DefaultPolicy()
+    # # policy = Policy(l2_config['num_feat'])
+
+    # obs = rrt.reset()
+    # done = False
+
+    # idx = 0
+    # while not done:
+    #     action = policy.get_action(obs)
+    #     obs, reward, done, _ = rrt.step(action)
+        
+    #     idx += 1
+
+
+    # rrt.show()
+    # plt.show()
+
+
+
+
+
+    import arm
+    q = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
+    target_q = np.array([0., 0., 0., 0., 0., 0., 0.])
+
+    arm_data_dict = arm.arm_map_create(None, q, target_q)
+    arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
+    arm_config = {'collision_check': arm.arm_collision_check,
+                  'random_sample': arm_random_sampler,
+                  'steer': arm.arm_steer,
+                  'dist': arm.arm_dist_func,
+                  'goal_region': arm.arm_goal_region,
+                  'feat': arm.arm_feat,
+                  'num_feat': 1}
+
+    rrt = RRTConnectEnv(arm_config, arm_data_dict)
+    policy = DefaultPolicy()
+
 
     obs = rrt.reset()
     done = False
-
     idx = 0
     while not done:
         action = policy.get_action(obs)
         obs, reward, done, _ = rrt.step(action)
         
         idx += 1
+    
+    if not rrt.found_path:
+        print("Path Not Found")
 
 
-    rrt.show()
+    path, cost = rrt.get_path()
+    print("Cost: " + str(cost))
+    print("Path Len: " + str(len(path)))
+    print("Path: " + str(path))
+    armv = arm.ArmVisualize()
+    for node in path:
+        q = rrt.tree.node_states[node]
+        armv.plot(q)
+        plt.show(block=False)
+        plt.pause(0.1)
+        raw_input("Press Enter to Continue:")
     plt.show()
-
-
-
-
-

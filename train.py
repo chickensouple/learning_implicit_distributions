@@ -48,7 +48,6 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
             stats.push_list(reward.tolist())
             reward = (reward - stats.get_mean()) / stats.get_std()
 
-
             num_data = len(state_list)
             num_batches = int(math.ceil(float(num_data) / max_batch))
             for i in range(num_batches-1):
@@ -73,7 +72,7 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
 
                 env_rewards.append(np.sum(reward))
 
-                # TODO: fix this
+                # TODO: break this up into chunks incase we are asking for too many baselines at once
                 baseline_value = baseline.get_baseline(np.array(state))
                 reward = np.array(reward)
                 reward = get_disc_rewards(reward, gamma)
@@ -91,9 +90,6 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
             num_data = len(state_list)
             num_batches = int(math.ceil(float(num_data) / max_batch))
 
-
-
-
             for i in range(num_batches-1):
                 idx1 = i*max_batch
                 idx2 = (i+1)*max_batch
@@ -101,16 +97,12 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
             idx1 = (num_batches-1)*max_batch
             baseline.train(np.array(state_list[idx1:]), np.array(reward_list[idx1:]))
 
-
-
             for i in range(num_batches-1):
                 idx1 = i*max_batch
                 idx2 = (i+1)*max_batch
                 loss = policy.update(state_list[idx1:idx2], action_list[idx1:idx2], advantage_list[idx1:idx2])
             idx1 = (num_batches-1)*max_batch
             loss = policy.update(state_list[idx1:], action_list[idx1:], advantage_list[idx1:])
-
-
 
             # batch_size = min(max_batch, len(state_list))
             # batch_idx = np.random.randint(len(state_list), size=batch_size)
@@ -175,6 +167,7 @@ if __name__ == '__main__':
     import argparse
     import sys
     import pickle
+
 
     parser = argparse.ArgumentParser(description="Reinforcement Training of Implicit Sampling")
     parser.add_argument('--load', dest='load_file', action='store', type=str, default=None)

@@ -46,7 +46,7 @@ class RRTBiEnv(object):
         closest_idx = curr_tree.closest_idx(rand_node, self.config['dist'])
         closest_node = curr_tree.node_states[closest_idx]
 
-        state, path = self.extend(closest_node, rand_node, env)
+        state, path = self.extend(closest_node, rand_node, self.map_info)
         if state == ExtendState.TRAPPED:
             return
         else:
@@ -63,7 +63,7 @@ class RRTBiEnv(object):
             while True:
                 closest_idx = other_tree.closest_idx(new_node, self.config['dist'])
                 closest_node = other_tree.node_states[closest_idx]
-                state, path = self.extend(closest_node, new_node, env)
+                state, path = self.extend(closest_node, new_node, self.map_info)
                 if state != ExtendState.ADVANCED:
                     break
                 other_tree.insert_node(path[-1], path, closest_idx)
@@ -105,11 +105,11 @@ class RRTBiEnv(object):
         return self.node_feat, reward, self.found_path, None
         
 
-    def extend(self, node_from, node_to, env):
+    def extend(self, node_from, node_to, map_info):
         path, path_cost = self.config['steer'](node_from, node_to)
         new_node = path[-1]
 
-        collision, num_checks = self.config['collision_check'](env, path, True)
+        collision, num_checks = self.config['collision_check'](map_info, path, True)
         self.num_collision_checks += num_checks
         if collision:
             return ExtendState.TRAPPED, path

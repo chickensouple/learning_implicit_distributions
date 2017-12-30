@@ -3,5 +3,7 @@
 *.mat
 *.zip
 data
+sftp-config.json
+
 
 

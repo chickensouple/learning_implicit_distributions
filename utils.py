@@ -5,7 +5,7 @@ import dubins
 
 def map_sampler(map_info):
     rand_idx = np.random.random(2) * map_info['map'].shape
-    while (map_collision_check(map_info['map'], rand_idx)):
+    while (map_collision_check(map_info, rand_idx)):
         rand_idx = np.random.random(2) * map_info['map'].shape
 
     return rand_idx
@@ -19,18 +19,18 @@ def map_sampler_goal_bias(map_info, eps):
 
     return rand_idx
 
-def map_collision_check(arr, path, return_num_coll=False):
+def map_collision_check(map_info, path, return_num_coll=False):
     # returns True, if collision
     num_collision_checks = 0
     collision = False
     if type(path) is list:
         for node in path:
-            if _map_collision_check(arr, node):
+            if _map_collision_check(map_info, node):
                 num_collision_checks += 1
                 collision = True
                 break
     else:
-        collision = _map_collision_check(arr, path)
+        collision = _map_collision_check(map_info, path)
         num_collision_checks += 1
 
     if return_num_coll:
@@ -67,7 +67,8 @@ def map_inbounds(arr, node):
 
 
 # returns true of collision
-def _map_collision_check(arr, node):
+def _map_collision_check(map_info, node):
+    arr = map_info['map']
     idx = np.array(np.floor(node), dtype=np.int)
     if (idx[0] < 0) or (idx[0] >= (arr.shape[0])):
         return True
@@ -158,7 +159,6 @@ def get_feat_dynamic_domain(point, tree, map_info):
 
 def get_feat_default(point, tree, map_info):
     return point
-
 
 
 

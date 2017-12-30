@@ -146,11 +146,12 @@ def __gen_rand_point(arr, dubins=False):
 
 def __gen_path(arr, dubins=False):
     start = __gen_rand_point(arr, dubins)
-    while map_collision_check(arr, start):
+    temp_map_info = {'map': arr}
+    while map_collision_check(temp_map_info, start):
         start = __gen_rand_point(arr, dubins)
 
     goal = __gen_rand_point(arr, dubins)
-    while map_collision_check(arr, goal):
+    while map_collision_check(temp_map_info, goal):
         goal = __gen_rand_point(arr, dubins)
 
     return [start, goal]
