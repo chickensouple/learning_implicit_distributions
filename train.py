@@ -17,6 +17,7 @@ from baseline import Baseline
 from rrt_connect_env import RRTConnectEnv
 from rrt_bi_env import RRTBiEnv
 from est_env import ESTEnv
+import arm
 
 gamma = 1
 
@@ -174,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('--store', dest='store_file', action='store', type=str, default=None)
     parser.add_argument('--env', dest='env', action='store', type=str, default=None,
         required=True,
-        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'empty'])
+        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'empty', 'arm'])
     parser.add_argument('--planner', dest='planner', action='store', type=str, 
         default='rrt_connect',
         choices=['rrt_connct', 'rrt_bi', 'est'])
@@ -246,6 +247,24 @@ if __name__ == '__main__':
                   'num_feat': num_feats}
         data_dict_list = [data_dict]
         config_list = [config]
+    elif args.env == 'arm':
+        num_feats = None
+        feat_func = None
+
+        data_dict_list = [data_dict]
+        config_list = [config]
+        for i in range(3):
+            data_dict = arm_map_create(pointcloud, start, goal)
+            arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
+            config = {'collision_check': arm.arm_collision_check,
+                      'random_sample': arm_random_sampler,
+                      'steer': arm.arm_steer,
+                      'dist': arm.arm_dist_func,
+                      'goal_region': arm.arm_goal_region,
+                      'feat': feat_func,
+                      'num_feat': num_feats}
+            data_dict_list.append(data_dict)
+            config_list.append(config)
     else:
         raise Exception('Not a valid Environment')
 

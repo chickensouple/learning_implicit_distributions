@@ -156,7 +156,6 @@ def __gen_path(arr, dubins=False):
 
     return [start, goal]
 
-
 def generate_data(map_type, dubins=False):
     if map_type == 'rooms':
         arr = generate_map(20, 20, nrooms=4, max_col_size=10, max_row_size=10)
@@ -179,7 +178,6 @@ def generate_data(map_type, dubins=False):
     data_dict = {'map': arr, 'start': start, 'goal': goal}
     data_dict['precomputed'] = map_obst_precompute(arr)
     return data_dict
-
 
 if __name__ == '__main__':
     while 1:

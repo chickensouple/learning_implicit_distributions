@@ -155,8 +155,6 @@ class RRTBiEnv(object):
             self.trees[1].show(goal=self.map_info['goal'])
 
 
-
-
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from generate_data import generate_data
@@ -179,7 +177,6 @@ if __name__ == '__main__':
               'feat': get_feat_flytrap_bi,
               'num_feat': 1,
               'precomputed': map_obst_precompute(l2_data_dict['map'])}
-
 
     rrt = RRTBiEnv(l2_config, l2_data_dict)
     policy = DefaultPolicy()

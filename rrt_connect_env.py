@@ -162,7 +162,7 @@ if __name__ == '__main__':
     q = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
     target_q = np.array([0., 0., 0., 0., 0., 0., 0.])
 
-    arm_data_dict = arm.arm_map_create(None, q, target_q)
+    arm_data_dict = arm.arm_map_create(np.array([[0, 0, 0]]), q, target_q)
     arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
     arm_config = {'collision_check': arm.arm_collision_check,
                   'random_sample': arm_random_sampler,

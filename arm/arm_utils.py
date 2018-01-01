@@ -1,10 +1,16 @@
 import numpy as np
-
+import sklearn.neighbors
+from forward_kinematics import *
 
 def arm_map_create(pointcloud, start, goal):
+    # pointcloud is N by 3
+    kdtree = sklearn.neighbors.KDTree(pointcloud)
+
+    # TODO: put in mixture model stuff
+
     angle_lower_limits = np.array([-np.pi, -np.pi, -np.pi, -np.pi, -np.pi, -np.pi, -np.pi])
     angle_upper_limits = np.array([np.pi, np.pi, np.pi, np.pi, np.pi, np.pi, np.pi])
-    map_dict = {'map': pointcloud, 
+    map_dict = {'kdtree': kdtree, 
     'start': start, 
     'goal': goal,
     'lower_limits': angle_lower_limits,
@@ -91,25 +97,54 @@ def _arm_collision_check(map_info, joint_angles):
         np.any(joint_angles > map_info['upper_limits']):
         return True
 
-    # TODO
+    # TODO: may need more points?
+    T, pts = kinematics_forward_l_default(joint_angles)
+    for pt in pts:
+        dists, indices = map_info['kdtree'].query(np.array([pt]), k=1)
+        dist = np.asscalar(dists)
+        if dist < 0.1:
+            return True
+
     return False
 
 def arm_feat(joint, trees, map_info):
-    # TODO
-    return 0
+    T, pts = kinematics_forward_l_default(joint_angles)
+    # extract features
 
+    feats = []
+
+    for i in [1, 3, 4]:
+        pt = pts[i]
+        dists, indices = map_info['kdtree'].query(np.array([pt]), k=1)
+        dist = np.asscalar(dists)
+        feats.append(dist)
+
+    feats = np.array(feats)
+    return feats
 
 if __name__ == '__main__':
-    q = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
-    target_q = np.array([0., 0., 0., 0., 0., 0., 0.])
+    # pointcloud = np.array([[0, 0, 0.]])
+    # q = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
+    # target_q = np.array([0., 0., 0., 0., 0., 0., 0.])
+
+    # map_dict = arm_map_create(None, q, target_q)
+
+    # print "goal: ", arm_goal_region(q, target_q)
+    # print "steer: ", arm_steer(q, target_q)
+    # print "random: ", arm_random_sample(map_info=map_dict, eps=0.5)
+    # print "dist: ", arm_dist_func(q, np.array([target_q]))
+
+    # path, dist = arm_steer(q, target_q)
+    # print "collision: ", arm_collision_check(map_dict, path)
+    points = np.array([[0., 0., 2.],
+        [0, 0, 0],
+        [-2, 1, 1],
+        [4, 2, 1]])
+
+    kdtree = sklearn.neighbors.KDTree(points)
+    query = kdtree.query(np.array([[0, 0, 0], 
+        [-2, 1, 1]]), k=1)
+    # query = kdtree.query(np.array([0, 0, 0]), k=2)
+    print query
 
 
-    map_dict = arm_map_create(None, q, target_q)
-
-    print "goal: ", arm_goal_region(q, target_q)
-    print "steer: ", arm_steer(q, target_q)
-    print "random: ", arm_random_sample(map_info=map_dict, eps=0.5)
-    print "dist: ", arm_dist_func(q, np.array([target_q]))
-
-    path, dist = arm_steer(q, target_q)
-    print "collision: ", arm_collision_check(map_dict, path)
