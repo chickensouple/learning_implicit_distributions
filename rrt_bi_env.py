@@ -30,6 +30,7 @@ class RRTBiEnv(object):
         self.tree_idx = 0
         self.goal_idx = [None, None]
 
+
         self.rand_node = self.config['random_sample'](self.map_info)
         self.node_feat = self.config['feat'](self.rand_node, 
             self.trees, 
@@ -41,7 +42,6 @@ class RRTBiEnv(object):
     def __run(self, rand_node):
         curr_tree = self.trees[self.tree_idx]
         other_tree = self.trees[1 - self.tree_idx]
-        env = self.map_info['map']
 
         closest_idx = curr_tree.closest_idx(rand_node, self.config['dist'])
         closest_node = curr_tree.node_states[closest_idx]

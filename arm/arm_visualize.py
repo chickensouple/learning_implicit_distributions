@@ -4,9 +4,12 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 class ArmVisualize(object):
-    def __init__(self):
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(111, projection='3d')
+    def __init__(self, ax=None):
+        if ax == None:
+            fig = plt.figure()
+            self.ax = fig.add_subplot(111, projection='3d')
+        else:
+            self.ax = ax
 
     def plot(self, q):
         T, pt = kinematics_forward_l_default(q)
@@ -18,6 +21,24 @@ class ArmVisualize(object):
         self.ax.set_ylabel('y')
         self.ax.set_zlabel('z')
 
+
+        min_axes = []
+        max_axes = []
+        bot, top = self.ax.get_xlim()
+        min_axes.append(bot)
+        max_axes.append(top)
+        bot, top = self.ax.get_ylim()
+        min_axes.append(bot)
+        max_axes.append(top)
+        bot, top = self.ax.get_zlim()
+        min_axes.append(bot)
+        max_axes.append(top)
+
+        bot = min(min_axes)
+        top = max(max_axes)
+        self.ax.set_xlim((bot, top))
+        self.ax.set_ylim((bot, top))
+        self.ax.set_zlim((bot, top))
 
 
 

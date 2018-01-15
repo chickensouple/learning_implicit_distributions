@@ -42,22 +42,30 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
     # train baseline estimator a bit
     for i, (env, baseline, stats) in enumerate(zip(env_list, baseline_list, stats_list)):
         print("Baseline " + str(i))
+        reward_list = []
+        state_list = []
         for _ in tqdm(range(4)):
-            state_list, _, reward = run_env.run(env)
-            state_list = np.array(state_list)
+            states, _, reward = run_env.run(env)
+            states = np.array(states)
             reward = np.array(reward)
             reward = get_disc_rewards(reward, gamma)
             stats.push_list(reward.tolist())
-            reward = (reward - stats.get_mean()) / stats.get_std()
+            reward_list.append(reward)
+            state_list.append(states)
 
-            num_data = len(state_list)
+        for _ in tqdm(range(4)):
+            reward = (reward_list[i] - stats.get_mean()) / stats.get_std()
+            states = state_list[i]
+            # reward = (reward - stats.get_mean()) / stats.get_std()
+
+            num_data = len(states)
             num_batches = int(math.ceil(float(num_data) / max_batch))
             for i in range(num_batches-1):
                 idx1 = i*max_batch
                 idx2 = (i+1)*max_batch
-                baseline.train(np.array(state_list[idx1:idx2]), np.array(reward[idx1:idx2]))
+                baseline.train(np.array(states[idx1:idx2]), np.array(reward[idx1:idx2]))
             idx1 = (num_batches-1)*max_batch
-            baseline.train(np.array(state_list[idx1:]), np.array(reward[idx1:]))
+            baseline.train(np.array(states[idx1:]), np.array(reward[idx1:]))
 
     for j in range(niter):
         for env, baseline, stats, avg_reward in zip(env_list, baseline_list, stats_list, avg_reward_list):
@@ -249,16 +257,21 @@ if __name__ == '__main__':
         data_dict_list = [data_dict]
         config_list = [config]
     elif args.env == 'arm':
-        num_feats = None
-        feat_func = None
+        num_feats = 3
+        feat_func = arm.arm_feat
 
-        points1 = scipy.io.loadmat('pointcloud_data/points1.mat')['points_arm'][:, 0:3]
-        pointcloud_list = [points1]
+        points5 = scipy.io.loadmat('pointclouddata/processed_5.mat')['save_struct'][0, 0]
+        start5 = np.array([0, 0.0, 0., 0., 0., 0., 0.])
+        goal5 = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
+        # points1 = scipy.io.loadmat('pointclouddata/processed_5.mat')['points_arm'][:, 0:3]
+        pointcloud_list = [points5]
+        start_list = [start5]
+        goal_list = [goal5]
 
         data_dict_list = []
         config_list = []
-        for i in range(3):
-            data_dict = arm_map_create(pointcloud_list[i], start, goal)
+        for i in range(len(pointcloud_list)):
+            data_dict = arm.arm_map_create(pointcloud_list[i], start_list[i], goal_list[i])
             arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
             config = {'collision_check': arm.arm_collision_check,
                       'random_sample': arm_random_sampler,

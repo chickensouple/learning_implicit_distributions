@@ -1,16 +1,17 @@
 import numpy as np
 import sklearn.neighbors
 from forward_kinematics import *
+import copy
 
-def arm_map_create(pointcloud, start, goal):
+def arm_map_create(pointcloud_data, start, goal):
     # pointcloud is N by 3
-    kdtree = sklearn.neighbors.KDTree(pointcloud)
-
-    # TODO: put in mixture model stuff
+    kdtree = sklearn.neighbors.KDTree(pointcloud_data['points'])
 
     angle_lower_limits = np.array([-np.pi, -np.pi, -np.pi, -np.pi, -np.pi, -np.pi, -np.pi])
     angle_upper_limits = np.array([np.pi, np.pi, np.pi, np.pi, np.pi, np.pi, np.pi])
     map_dict = {'kdtree': kdtree, 
+    'means': pointcloud_data['means'],
+    'sigmas': pointcloud_data['sigmas'],
     'start': start, 
     'goal': goal,
     'lower_limits': angle_lower_limits,
@@ -74,7 +75,7 @@ def arm_dist_func(node_from, node_to):
     dist = np.linalg.norm(dist, axis=1)
     return dist
 
-def arm_collision_check(map_info, path, return_num_coll):
+def arm_collision_check(map_info, path, return_num_coll=False):
     num_collision_checks = 0
     collision = False
     if type(path) is list:
@@ -92,6 +93,19 @@ def arm_collision_check(map_info, path, return_num_coll):
     else:
         return collision
 
+
+def _linspace(pt1, pt2, num_pts):
+    step = (pt2 - pt1) / num_pts
+
+    curr_pt = copy.deepcopy(pt1)
+    pts = []
+    pts.append(pt1)
+    for i in range(num_pts):
+        curr_pt += step
+        pts.append(copy.deepcopy(curr_pt))
+
+    return pts
+
 def _arm_collision_check(map_info, joint_angles):
     if np.any(joint_angles < map_info['lower_limits']) or \
         np.any(joint_angles > map_info['upper_limits']):
@@ -99,6 +113,13 @@ def _arm_collision_check(map_info, joint_angles):
 
     # TODO: may need more points?
     T, pts = kinematics_forward_l_default(joint_angles)
+
+
+    pts = _linspace(pts[0], pts[1], 5) + \
+        _linspace(pts[2], pts[3], 5) + \
+        _linspace(pts[3], pts[4], 4)[1:]
+
+
     for pt in pts:
         dists, indices = map_info['kdtree'].query(np.array([pt]), k=1)
         dist = np.asscalar(dists)
@@ -107,8 +128,8 @@ def _arm_collision_check(map_info, joint_angles):
 
     return False
 
-def arm_feat(joint, trees, map_info):
-    T, pts = kinematics_forward_l_default(joint_angles)
+def arm_feat(joint, trees, map_info, tree_idx):
+    T, pts = kinematics_forward_l_default(joint)
     # extract features
     feats = []
 
@@ -122,28 +143,34 @@ def arm_feat(joint, trees, map_info):
     return feats
 
 if __name__ == '__main__':
-    # pointcloud = np.array([[0, 0, 0.]])
-    # q = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
-    # target_q = np.array([0., 0., 0., 0., 0., 0., 0.])
+    import scipy.io
 
-    # map_dict = arm_map_create(None, q, target_q)
+    pointcloud = scipy.io.loadmat('../pointclouddata/processed_5.mat')
+    pointcloud = pointcloud['save_struct'][0, 0]
 
-    # print "goal: ", arm_goal_region(q, target_q)
-    # print "steer: ", arm_steer(q, target_q)
-    # print "random: ", arm_random_sample(map_info=map_dict, eps=0.5)
-    # print "dist: ", arm_dist_func(q, np.array([target_q]))
+    q = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
+    target_q = np.array([0., 0., 0., 0., 0., 0., 0.])
 
-    # path, dist = arm_steer(q, target_q)
-    # print "collision: ", arm_collision_check(map_dict, path)
-    points = np.array([[0., 0., 2.],
-        [0, 0, 0],
-        [-2, 1, 1],
-        [4, 2, 1]])
+    map_dict = arm_map_create(pointcloud, q, target_q)
 
-    kdtree = sklearn.neighbors.KDTree(points)
-    query = kdtree.query(np.array([[0, 0, 0], 
-        [-2, 1, 1]]), k=1)
-    # query = kdtree.query(np.array([0, 0, 0]), k=2)
-    print query
+    print "goal: ", arm_goal_region(q, target_q)
+    print "steer: ", arm_steer(q, target_q)
+    print "random: ", arm_random_sample(map_info=map_dict, eps=0.5)
+    print "dist: ", arm_dist_func(q, np.array([target_q]))
+
+    path, dist = arm_steer(q, target_q)
+    print "collision: ", arm_collision_check(map_dict, path)
+
+
+    # points = np.array([[0., 0., 2.],
+    #     [0, 0, 0],
+    #     [-2, 1, 1],
+    #     [4, 2, 1]])
+
+    # kdtree = sklearn.neighbors.KDTree(points)
+    # query = kdtree.query(np.array([[0, 0, 0], 
+    #     [-2, 1, 1]]), k=1)
+    # # query = kdtree.query(np.array([0, 0, 0]), k=2)
+    # print query
 
 
