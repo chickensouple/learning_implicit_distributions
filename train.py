@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import scipy
 import scipy.misc
+import scipy.io
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -178,7 +179,7 @@ if __name__ == '__main__':
         choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'empty', 'arm'])
     parser.add_argument('--planner', dest='planner', action='store', type=str, 
         default='rrt_connect',
-        choices=['rrt_connct', 'rrt_bi', 'est'])
+        choices=['rrt_connect', 'rrt_bi', 'est'])
     parser.add_argument('--type', dest='type', action='store',
         required=True,
         choices=['train', 'plot_feat', 'plot_reward', 'plot_value'],
@@ -251,10 +252,13 @@ if __name__ == '__main__':
         num_feats = None
         feat_func = None
 
-        data_dict_list = [data_dict]
-        config_list = [config]
+        points1 = scipy.io.loadmat('pointcloud_data/points1.mat')['points_arm'][:, 0:3]
+        pointcloud_list = [points1]
+
+        data_dict_list = []
+        config_list = []
         for i in range(3):
-            data_dict = arm_map_create(pointcloud, start, goal)
+            data_dict = arm_map_create(pointcloud_list[i], start, goal)
             arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
             config = {'collision_check': arm.arm_collision_check,
                       'random_sample': arm_random_sampler,

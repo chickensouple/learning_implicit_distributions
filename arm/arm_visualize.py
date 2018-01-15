@@ -14,7 +14,9 @@ class ArmVisualize(object):
         self.ax.plot(pt[:, 0], pt[:, 1], pt[:, 2], c='b')
         self.ax.scatter(pt[:, 0], pt[:, 1], pt[:, 2], c='b')
         self.ax.scatter(pt[0, 0], pt[0, 1], pt[0, 2], c='r')
-
+        self.ax.set_xlabel('x')
+        self.ax.set_ylabel('y')
+        self.ax.set_zlabel('z')
 
 
 

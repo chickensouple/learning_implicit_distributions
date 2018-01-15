@@ -110,7 +110,6 @@ def _arm_collision_check(map_info, joint_angles):
 def arm_feat(joint, trees, map_info):
     T, pts = kinematics_forward_l_default(joint_angles)
     # extract features
-
     feats = []
 
     for i in [1, 3, 4]:
