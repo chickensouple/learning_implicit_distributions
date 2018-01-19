@@ -11,6 +11,50 @@ from utils import *
 from generate_data import generate_data
 from rrt_connect_env import RRTConnectEnv
 
+
+
+def plot_policy_comparisons():
+    policy = Policy(1)
+    policy.load_model('good_models/model_envA1.ckpt')
+
+
+    # dynamic domain
+    plt.subplot(1, 2, 1)
+    obs = np.array([np.linspace(-10, 10, 100)]).T
+    fd = {policy.state_input: obs, policy.is_train: np.array([False])}
+    probs = policy.sess.run(policy.prob, feed_dict=fd)
+
+    plt.title("Flytrap A")
+
+    plt.plot(obs, probs[:, 0], c='r', label='Learned Policy')
+    plt.xlabel("feature")
+    plt.ylabel("p(accept)")
+
+    dd_rrt = np.heaviside(obs, 1)
+    dd_rrt = dd_rrt[::-1]
+    plt.plot(obs, dd_rrt, c='b', linestyle='-', label='Dynamic Domain')
+    plt.legend()
+
+
+    policy.load_model('data/model_envB3.ckpt')
+    plt.subplot(1, 2, 2)
+    obs = np.array([np.linspace(-2, 10, 100)]).T
+    fd = {policy.state_input: obs, policy.is_train: np.array([False])}
+    probs = policy.sess.run(policy.prob, feed_dict=fd)
+
+    plt.title("Flytrap B")
+
+    plt.plot(obs, probs[:, 0], c='r', label='Learned Policy')
+    plt.xlabel("feature")
+    plt.ylabel("p(accept)")
+
+    dd_rrt = np.heaviside(obs, 1)
+    plt.plot(obs, dd_rrt, c='b', linestyle='-', label='BallTree')
+    plt.legend()
+
+
+    plt.show()
+
 def plot_feat(policy, **kwargs):
     obs = np.array([np.linspace(-10, 10, 100)]).T
     fd = {policy.state_input: obs, policy.is_train: np.array([False])}
@@ -184,7 +228,8 @@ def dist_model_a1():
 
 if __name__ == '__main__':
     # plot_model_a1()
-    dist_model_a1()
+    # dist_model_a1()
+    plot_policy_comparisons()
 
 
 
