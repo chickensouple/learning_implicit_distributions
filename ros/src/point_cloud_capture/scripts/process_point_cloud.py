@@ -45,7 +45,7 @@ if __name__ == '__main__':
     pub_pointcloud = sensor_msgs.point_cloud2.create_cloud(curr_cloud.header, curr_cloud.fields, new_points)
 
     new_points_arr = np.array(new_points)
-    scipy.io.savemat('pointcloud5.mat', mdict={'points': new_points_arr})
+    scipy.io.savemat('pointcloud.mat', mdict={'points': new_points_arr})
 
     # publish processed pc
     while True and not rospy.is_shutdown():

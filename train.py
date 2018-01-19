@@ -56,7 +56,6 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
         for _ in tqdm(range(4)):
             reward = (reward_list[i] - stats.get_mean()) / stats.get_std()
             states = state_list[i]
-            # reward = (reward - stats.get_mean()) / stats.get_std()
 
             num_data = len(states)
             num_batches = int(math.ceil(float(num_data) / max_batch))
@@ -257,16 +256,35 @@ if __name__ == '__main__':
         data_dict_list = [data_dict]
         config_list = [config]
     elif args.env == 'arm':
-        num_feats = 3
-        feat_func = arm.arm_feat
+        num_feats = 4
+        feat_func = arm.arm_feat_bi
 
-        points5 = scipy.io.loadmat('pointclouddata/processed_5.mat')['save_struct'][0, 0]
-        start5 = np.array([0, 0.0, 0., 0., 0., 0., 0.])
-        goal5 = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
-        # points1 = scipy.io.loadmat('pointclouddata/processed_5.mat')['points_arm'][:, 0:3]
-        pointcloud_list = [points5]
-        start_list = [start5]
-        goal_list = [goal5]
+        start = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
+
+        goal1 = np.array([20, -15, 0, 0, 0, 10, 0]) * math.pi / 180
+        goal2 = np.array([20, 15, 0, 0, 0, -70, 0]) * math.pi / 180
+        # 3 is harder problem
+        goal3 = np.array([35, -15, 0, 0, 90, 45, 0]) * math.pi / 180
+        goal4 = np.array([80, 0, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal5 = np.array([100, -50, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal6 = np.array([80, 0, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal7 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal8 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal9 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal10 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+        goals = [goal1, goal2, goal3, goal4, goal5, goal6, goal7, goal8, goal9, goal10]
+
+        pointcloud_nums = [1]
+        pointcloud_list = []
+        start_list = []
+        goal_list = []
+        for num in pointcloud_nums:
+            file = 'pointclouddata/processed_' + str(num) + '.mat'
+            points = scipy.io.loadmat(file)['save_struct'][0, 0]
+            pointcloud_list.append(points)
+            start_list.append(start)
+            goal_list.append(goals[num])
+
 
         data_dict_list = []
         config_list = []

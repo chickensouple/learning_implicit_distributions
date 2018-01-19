@@ -1,7 +1,13 @@
 % close all
 % load drillmodel_full   
 clc; clear all; close all
-load pointcloud5.mat
+
+pc_num = 10;
+
+load_file = strcat('pointcloud', num2str(pc_num), '.mat');
+store_file = strcat('processed_', num2str(pc_num), '.mat');
+
+load(load_file)
 points = transform_pointcloud(points);
 
 
@@ -29,7 +35,7 @@ grid on;
 
 
 save_struct = struct('points', points(:, 1:3), 'means', Means, 'sigmas', Sigmas);
-save("processed_5.mat", "save_struct")
+save(store_file, "save_struct")
 
 for fig_k =1:num_centers
    plotcov3(Means(fig_k,:), Sigmas(:,:,fig_k)); 
@@ -52,12 +58,6 @@ plot3(TX(idx,1),TX(idx,2),TX(idx,3),'r.');
 grid on;
 
 %F = X.^2 + Y.^2 + Z.^2;
-
-
-
-
-
-
 
 
 % 

@@ -159,17 +159,19 @@ if __name__ == '__main__':
 
 
     import arm
-    q = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
-    target_q = np.array([0., 0., 0., 0., 0., 0., 0.])
+    qstart = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
+    qgoal = np.array([20, -15, 0, 0, 0, 10, 0]) * math.pi / 180
 
-    arm_data_dict = arm.arm_map_create(np.array([[0, 0, 0]]), q, target_q)
+    pointcloud = {'points': np.array([[0, 0, 0]]), 'means': 0, 'sigmas': 0}
+    
+    arm_data_dict = arm.arm_map_create(pointcloud, qstart, qgoal)
     arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
     arm_config = {'collision_check': arm.arm_collision_check,
                   'random_sample': arm_random_sampler,
                   'steer': arm.arm_steer,
                   'dist': arm.arm_dist_func,
                   'goal_region': arm.arm_goal_region,
-                  'feat': arm.arm_feat,
+                  'feat': arm.arm_feat_single,
                   'num_feat': 1}
 
     rrt = RRTConnectEnv(arm_config, arm_data_dict)

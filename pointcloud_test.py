@@ -3,14 +3,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import arm
+import math
 
 if __name__ == '__main__':
-    p5 = scipy.io.loadmat('pointclouddata/processed_5.mat')
+    p5 = scipy.io.loadmat('pointclouddata/processed_1.mat')
     p5 = p5['save_struct'][0, 0]
     points = p5['points']
 
-    q1 = [0, 0.0, 0., 0., 0., 0., 0.]
-    q2 = [1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481]
+
+    qinit = np.array([90, 10, 0, -160, 0, 0, 0]) * math.pi / 180
+
+    # q1 = [0, 0.0, 0., 0., 0., 0., 0.]
+    # q2 = [0.5, -1., 0.1047, 0., 1.4258, -0.4063, -1.4481]
+
+    q2 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')

@@ -7,8 +7,12 @@ def arm_map_create(pointcloud_data, start, goal):
     # pointcloud is N by 3
     kdtree = sklearn.neighbors.KDTree(pointcloud_data['points'])
 
-    angle_lower_limits = np.array([-np.pi, -np.pi, -np.pi, -np.pi, -np.pi, -np.pi, -np.pi])
-    angle_upper_limits = np.array([np.pi, np.pi, np.pi, np.pi, np.pi, np.pi, np.pi])
+    # angle_lower_limits = np.array([-np.pi, -np.pi, -np.pi, -np.pi, -np.pi, -np.pi, -np.pi])
+    # angle_upper_limits = np.array([np.pi, np.pi, np.pi, np.pi, np.pi, np.pi, np.pi])
+
+    angle_lower_limits = np.array([-90, -175, -90, -160, -180, -87, -180.]) * np.pi / 180
+    angle_upper_limits = np.array([180, 87, 135, 0, 180, 87, 180]) * np.pi / 180
+
     map_dict = {'kdtree': kdtree, 
     'means': pointcloud_data['means'],
     'sigmas': pointcloud_data['sigmas'],
@@ -29,7 +33,7 @@ def arm_goal_region(point, goal):
 
     return dist < 0.2
 
-def arm_steer(node_from, node_to, discr=0.15, delta_lim=0.5):
+def arm_steer(node_from, node_to, discr=0.08, delta_lim=0.5):
     delta = constrain_angles_two_pi(node_to - node_from)
     mask = delta > np.pi
     delta[mask] = -(2*np.pi - delta[mask])
@@ -119,16 +123,16 @@ def _arm_collision_check(map_info, joint_angles):
         _linspace(pts[2], pts[3], 5) + \
         _linspace(pts[3], pts[4], 4)[1:]
 
-
     for pt in pts:
         dists, indices = map_info['kdtree'].query(np.array([pt]), k=1)
         dist = np.asscalar(dists)
-        if dist < 0.1:
+        if dist < 0.05:
             return True
 
     return False
 
-def arm_feat(joint, trees, map_info, tree_idx):
+
+def arm_feat_single(joint, trees, map_info):
     T, pts = kinematics_forward_l_default(joint)
     # extract features
     feats = []
@@ -142,10 +146,28 @@ def arm_feat(joint, trees, map_info, tree_idx):
     feats = np.array(feats)
     return feats
 
+def arm_feat_bi(joint, trees, map_info, tree_idx):
+    T, pts = kinematics_forward_l_default(joint)
+    # extract features
+    feats = []
+
+    for i in [1, 3, 4]:
+        pt = pts[i]
+        dists, indices = map_info['kdtree'].query(np.array([pt]), k=1)
+        dist = np.asscalar(dists)
+        feats.append(dist)
+
+    # tree distances
+    _, dist = trees[tree_idx].closest_idx(joint, arm_dist_func, return_dist=True)
+    feats.append(dist)
+
+    feats = np.array(feats)
+    return feats
+
 if __name__ == '__main__':
     import scipy.io
 
-    pointcloud = scipy.io.loadmat('../pointclouddata/processed_5.mat')
+    pointcloud = scipy.io.loadmat('../pointclouddata/processed_2.mat')
     pointcloud = pointcloud['save_struct'][0, 0]
 
     q = np.array([1.0502, -0.0480, 0.1047, -1.4513, 1.4258, -0.4063, -1.4481])
