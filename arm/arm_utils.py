@@ -164,6 +164,37 @@ def arm_feat_bi(joint, trees, map_info, tree_idx):
     feats = np.array(feats)
     return feats
 
+
+def arm_feat_bi2(joint, trees, map_info, tree_idx):
+    T, pts = kinematics_forward_l_default(joint)
+    # extract features
+    feats = []
+
+    for i in [3, 4]:
+        pt = pts[i]
+        dists, indices = map_info['kdtree'].query(np.array([pt]), k=1)
+        dist = np.asscalar(dists)
+        feats.append(dist)
+
+    # tree distances
+    _, dist = trees[tree_idx].closest_idx(joint, arm_dist_func, return_dist=True)
+    feats.append(dist)
+
+    _, dist = trees[1 - tree_idx].closest_idx(joint, arm_dist_func, return_dist=True)
+    feats.append(dist)
+
+    # goal distance
+    goal_dist = arm_dist_func(joint, np.array([map_info['goal']]))
+    feats.append(goal_dist)
+
+
+    # 5 features
+
+    feats = np.array(feats)
+    return feats
+
+
+
 if __name__ == '__main__':
     import scipy.io
 

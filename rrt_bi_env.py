@@ -210,7 +210,7 @@ if __name__ == '__main__':
 
     qstart = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
     qgoal = np.array([20, -15, 0, 0, 0, 10, 0]) * math.pi / 180
-    qgoal = np.array([20, 15, 0, 0, 0, -70, 0]) * math.pi / 180
+    # qgoal = np.array([20, 15, 0, 0, 0, -70, 0]) * math.pi / 180
     qgoal = np.array([35, -15, 0, 0, 90, 45, 0]) * math.pi / 180
 
 

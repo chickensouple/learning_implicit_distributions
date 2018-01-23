@@ -18,8 +18,14 @@ def test(env, policy, policyname, niter, file):
     num_collision_checks = []
     path_lengths = []
     num_samples = []
+
+    num_fail_paths = 0
     for i in tqdm(range(niter)):
-        _, _, reward = run_env.run(env)
+        _, _, reward = run_env.run(env, max_iter=100000)
+
+        if not env.found_path:
+            num_fail_paths += 1
+            continue
 
         rewards.append(np.sum(reward))
         # num_nodes.append(len(env.tree.node_states))
@@ -32,6 +38,7 @@ def test(env, policy, policyname, niter, file):
 
     print(policyname)
     print("===================")
+    print("Num Paths Failed: " + str(num_fail_paths))
     print("Mean Reward: " + str(np.mean(rewards)))
     print("Std Reward: " + str(np.std(rewards)))
     print("Mean Num Nodes: " + str(np.mean(num_nodes)))
@@ -64,6 +71,8 @@ if __name__ == '__main__':
     import argparse
     import sys
     import pickle
+    import scipy.io
+    import arm
 
     parser = argparse.ArgumentParser(description="Benchmark")
     parser.add_argument('--output', dest='output', 
@@ -73,7 +82,7 @@ if __name__ == '__main__':
         help='output file to write to')
     parser.add_argument('--env', dest='env', action='store',
         required=True,
-        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'fly_trap_fixed_a_test', 'fly_trap_fixed_b_test', 'empty'],
+        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'fly_trap_fixed_a_test', 'fly_trap_fixed_b_test', 'empty', 'arm'],
         help="environment type")
     args = parser.parse_args(sys.argv[1:])
 
@@ -92,11 +101,15 @@ if __name__ == '__main__':
     # policy5.load_model('data/model_envA2_est.ckpt.20.ckpt')
     # policy5.load_model('data/model_envA2_est.ckpt.0.ckpt')
 
-    policy6 = Policy(1)
-    policy6.load_model('data/model_envA2_bi.ckpt.480.ckpt')
+    # policy6 = Policy(1)
+    # policy6.load_model('data/model_envA2_bi.ckpt.480.ckpt')
+
+    policy7 = Policy(4)
+    policy7.load_model('data/model_envArm0.ckpt.900.ckpt')
 
     policies = [\
         [policy1, 'default'],
+        [policy7, 'model_Arm0']
         # [policy5, 'est_a2']
         # [policy6, 'rrtbi_a2']
         # [policy4, 'model a1'],
@@ -120,26 +133,67 @@ if __name__ == '__main__':
     num_feat = 1
 
 
-    np.random.seed(0)
-    l2_data_dict = generate_data(args.env)
-    l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
-    l2_goal = l2_goal_region
-    l2_config = {'collision_check': map_collision_check,
-              'random_sample': l2_random_sampler,
-              'steer': holonomic_steer,
-              'dist': l2_dist,
-              'goal_region': l2_goal,
-              'feat': feat,
-              'num_feat': num_feat,
-              'precomputed': map_obst_precompute(l2_data_dict['map'])}
-    np.random.seed(int(time.time()))
+
+    if args.env == 'arm':
+
+
+        start = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
+
+        goal1 = np.array([20, -15, 0, 0, 0, 10, 0]) * math.pi / 180
+        goal2 = np.array([20, 15, 0, 0, 0, -70, 0]) * math.pi / 180
+        # 3 is harder problem
+        goal3 = np.array([35, -15, 0, 0, 90, 45, 0]) * math.pi / 180
+        goal4 = np.array([80, 0, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal5 = np.array([100, -50, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal6 = np.array([80, 0, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal7 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal8 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal9 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal10 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+
+
+        qstart = start
+        qgoal = goal3
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+        pointcloud = scipy.io.loadmat('pointclouddata/processed_3.mat')['save_struct'][0, 0]
+        arm_data_dict = arm.arm_map_create(pointcloud, qstart, qgoal)
+        arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
+        arm_config = {'collision_check': arm.arm_collision_check,
+                      'random_sample': arm_random_sampler,
+                      'steer': arm.arm_steer,
+                      'dist': arm.arm_dist_func,
+                      'goal_region': arm.arm_goal_region,
+                      'feat': arm.arm_feat_bi,
+                      'num_feat': 1}
+
+        config = arm_config
+        data_dict = arm_data_dict
+    else:
+        np.random.seed(0)
+        l2_data_dict = generate_data(args.env)
+        l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
+        l2_goal = l2_goal_region
+        l2_config = {'collision_check': map_collision_check,
+                  'random_sample': l2_random_sampler,
+                  'steer': holonomic_steer,
+                  'dist': l2_dist,
+                  'goal_region': l2_goal,
+                  'feat': feat,
+                  'num_feat': num_feat,
+                  'precomputed': map_obst_precompute(l2_data_dict['map'])}
+        np.random.seed(int(time.time()))
+        config = l2_config
+        data_dict = l2_data_dict
+
 
 
     file = open(args.output, 'w')
 
-    # env = RRTConnectEnv(l2_config, l2_data_dict)
-    # env = ESTEnv(l2_config, l2_data_dict)
-    env = RRTBiEnv(l2_config, l2_data_dict)
+    # env = RRTConnectEnv(config, data_dict)
+    # env = ESTEnv(config, data_dict)
+    env = RRTBiEnv(config, data_dict)
 
     for policy, policyname in policies:
         test(env, policy, policyname, niter, file)

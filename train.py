@@ -29,6 +29,7 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
 
     # save an initial models
     policy.save_model(savefile + ".initial.ckpt")
+    # policy = DefaultPolicy()
 
     stats_list = []
     avg_reward_list = []
@@ -53,15 +54,16 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
             reward_list.append(reward)
             state_list.append(states)
 
-        for _ in tqdm(range(4)):
-            reward = (reward_list[i] - stats.get_mean()) / stats.get_std()
-            states = state_list[i]
+
+        for j in tqdm(range(4)):
+            reward = (reward_list[j] - stats.get_mean()) / stats.get_std()
+            states = state_list[j]
 
             num_data = len(states)
             num_batches = int(math.ceil(float(num_data) / max_batch))
-            for i in range(num_batches-1):
-                idx1 = i*max_batch
-                idx2 = (i+1)*max_batch
+            for k in range(num_batches-1):
+                idx1 = k*max_batch
+                idx2 = (k+1)*max_batch
                 baseline.train(np.array(states[idx1:idx2]), np.array(reward[idx1:idx2]))
             idx1 = (num_batches-1)*max_batch
             baseline.train(np.array(states[idx1:]), np.array(reward[idx1:]))
@@ -74,8 +76,12 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
             reward_list = []
 
             env_rewards = []
-            for k in range(num_repeat):
+            for k in tqdm(range(num_repeat)):
+
+                # import pdb
+                # pdb.set_trace()
                 state, action, reward = run_env.run(env)
+                # pdb.set_trace()
                 state_list.extend(state)
                 action_list.extend(action)
 
@@ -147,17 +153,17 @@ def plot_feat(policy, savefile):
     plt.show()
 
 def plot_reward(rrtprob, savefile):
-    # def moving_average(a, n=3) :
-    #     ret = np.cumsum(a, dtype=float)
-    #     ret[n:] = ret[n:] - ret[:-n]
-    #     return ret[n - 1:] / n
+    def moving_average(a, n=3) :
+        ret = np.cumsum(a, dtype=float)
+        ret[n:] = ret[n:] - ret[:-n]
+        return ret[n - 1:] / n
 
     avg_reward_list = pickle.load(open(savefile + '.p', 'rb'))
 
     for i, avg_reward in enumerate(avg_reward_list):
         plt.figure(i)
-        # plt.plot(moving_average(avg_reward.vals, 10))
-        plt.plot(avg_reward.vals)
+        plt.plot(moving_average(avg_reward.vals, 20))
+        # plt.plot(avg_reward.vals)
 
     plt.show()
 
@@ -256,8 +262,10 @@ if __name__ == '__main__':
         data_dict_list = [data_dict]
         config_list = [config]
     elif args.env == 'arm':
-        num_feats = 4
-        feat_func = arm.arm_feat_bi
+        # num_feats = 4
+        # feat_func = arm.arm_feat_bi
+        num_feats = 5
+        feat_func = arm.arm_feat_bi2
 
         start = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
 
