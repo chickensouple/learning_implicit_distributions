@@ -202,10 +202,8 @@ if __name__ == '__main__':
     # plt.show()
 
 
-
     import arm
     import scipy.io
-
 
 
     qstart = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
@@ -228,6 +226,10 @@ if __name__ == '__main__':
 
     rrt = RRTBiEnv(arm_config, arm_data_dict)
     policy = DefaultPolicy()
+
+
+    policy = Policy(4)
+    policy.load_model('data/model_envArm3.ckpt.140.ckpt')
 
 
     obs = rrt.reset()
@@ -254,7 +256,6 @@ if __name__ == '__main__':
     ax.set_ylabel('y')
     ax.set_zlabel('z')
 
-
     path, cost = rrt.get_path()
     print("Cost: " + str(cost))
     print("Path Len: " + str(len(path)))
@@ -270,3 +271,5 @@ if __name__ == '__main__':
     print("Done")
 
     plt.show()
+
+

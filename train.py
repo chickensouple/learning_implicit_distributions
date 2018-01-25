@@ -40,6 +40,7 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
     run_env = RunEnvironment(policy)
     print("Calculating starting baseline")
 
+
     # train baseline estimator a bit
     for i, (env, baseline, stats) in enumerate(zip(env_list, baseline_list, stats_list)):
         print("Baseline " + str(i))
@@ -49,6 +50,7 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
             states, _, reward = run_env.run(env)
             states = np.array(states)
             reward = np.array(reward)
+            print("reward: " + str(np.sum(reward)))
             reward = get_disc_rewards(reward, gamma)
             stats.push_list(reward.tolist())
             reward_list.append(reward)
@@ -85,6 +87,7 @@ def reinforce_train(env_list, baseline_list, policy, savefile, niter=5000):
                 state_list.extend(state)
                 action_list.extend(action)
 
+                print("reward: " + str(np.sum(reward)))
                 env_rewards.append(np.sum(reward))
 
                 # TODO: break this up into chunks incase we are asking for too many baselines at once
@@ -264,8 +267,10 @@ if __name__ == '__main__':
     elif args.env == 'arm':
         # num_feats = 4
         # feat_func = arm.arm_feat_bi
-        num_feats = 5
-        feat_func = arm.arm_feat_bi2
+        # num_feats = 5
+        # feat_func = arm.arm_feat_bi2
+        num_feats = 4
+        feat_func = arm.arm_feat_bi3
 
         start = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
 
@@ -282,7 +287,7 @@ if __name__ == '__main__':
         goal10 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
         goals = [goal1, goal2, goal3, goal4, goal5, goal6, goal7, goal8, goal9, goal10]
 
-        pointcloud_nums = [1]
+        pointcloud_nums = [1, 3]
         pointcloud_list = []
         start_list = []
         goal_list = []
@@ -292,7 +297,6 @@ if __name__ == '__main__':
             pointcloud_list.append(points)
             start_list.append(start)
             goal_list.append(goals[num])
-
 
         data_dict_list = []
         config_list = []

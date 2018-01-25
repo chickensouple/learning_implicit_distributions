@@ -105,7 +105,7 @@ if __name__ == '__main__':
     # policy6.load_model('data/model_envA2_bi.ckpt.480.ckpt')
 
     policy7 = Policy(4)
-    policy7.load_model('data/model_envArm0.ckpt.900.ckpt')
+    policy7.load_model('data/model_envArm3.ckpt.140.ckpt')
 
     policies = [\
         [policy1, 'default'],
@@ -165,9 +165,7 @@ if __name__ == '__main__':
                       'steer': arm.arm_steer,
                       'dist': arm.arm_dist_func,
                       'goal_region': arm.arm_goal_region,
-                      'feat': arm.arm_feat_bi,
-                      'num_feat': 1}
-
+                      'feat': arm.arm_feat_bi}
         config = arm_config
         data_dict = arm_data_dict
     else:

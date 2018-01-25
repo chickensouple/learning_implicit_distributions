@@ -226,11 +226,51 @@ def dist_model_a1():
 
 
 
+def plot_arm_policy():
+    policy = Policy(4)
+    policy.load_model('good_models/model_envArm3/model_envArm3.ckpt.140.ckpt')
+
+    # # feat is [dist to joint1, dist to joint3, dist to joint4, dist to current tree]
+    # feat1 = np.linspace(0, 0.5, 20)
+    # feat2 = np.linspace(0, 0.5, 20)
+    # feat3 = np.linspace(0, 0.5, 20)
+    # feat4 = np.linspace(0, 0.5, 20)
+
+
+    # feat_list = []
+    # for f1 in feat1:
+    #     for f2 in feat2:
+    #         for f3 in feat3:
+    #             for f4 in feat4:
+    #                 feat_list.append(np.array([f1, f2, f3, f4]))
+    
+    # feat_list = np.array(feat_list)
+    # probs = policy.get_prob(feat_list)
+    # accept_probs = probs[:, 0]
+    
+
+    feat4 = np.linspace(0, 1., 2000)
+    feat_list = []
+    for f4 in feat4:
+        feat_list.append(np.array([0.5, 0.01, 0.01, f4]))
+    feat_list = np.array(feat_list)
+
+
+    probs = policy.get_prob(feat_list)
+    accept_probs = probs[:, 0]
+    plt.plot(feat4, accept_probs)
+    plt.show()
+
+
+
+
+
+
 if __name__ == '__main__':
     # plot_model_a1()
     # dist_model_a1()
-    plot_policy_comparisons()
-
+    # plot_policy_comparisons()
+    plot_arm_policy()
 
 
 

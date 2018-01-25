@@ -129,6 +129,13 @@ class Policy(object):
 
         return action
 
+
+    def get_prob(self, feats):
+        fd = {self.state_input: feats, self.is_train: np.array(False)}
+        prob = self.sess.run(self.prob, feed_dict=fd)
+
+        return prob
+
     def update(self, obs, actions, advantage):
         fd = {self.state_input: obs, 
             self.selected_action: actions,
