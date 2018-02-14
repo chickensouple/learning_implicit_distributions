@@ -150,14 +150,15 @@ if __name__ == '__main__':
         goal8 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
         goal9 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
         goal10 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+        goal11 = np.array([85, -40, 0, -90, 90, 0, 0]) * math.pi / 180
 
 
         qstart = start
-        qgoal = goal3
+        qgoal = goal11
 
 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
-        pointcloud = scipy.io.loadmat('pointclouddata/processed_3.mat')['save_struct'][0, 0]
+        pointcloud = scipy.io.loadmat('pointclouddata/processed_11.mat')['save_struct'][0, 0]
         arm_data_dict = arm.arm_map_create(pointcloud, qstart, qgoal)
         arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
         arm_config = {'collision_check': arm.arm_collision_check,

@@ -6,7 +6,7 @@ import arm
 import math
 
 if __name__ == '__main__':
-    p5 = scipy.io.loadmat('pointclouddata/processed_1.mat')
+    p5 = scipy.io.loadmat('pointclouddata/processed_11.mat')
     p5 = p5['save_struct'][0, 0]
     points = p5['points']
 
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # q1 = [0, 0.0, 0., 0., 0., 0., 0.]
     # q2 = [0.5, -1., 0.1047, 0., 1.4258, -0.4063, -1.4481]
 
-    q2 = np.array([80, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+    q2 = np.array([85, -40, 0, -90, 90, 0, 0]) * math.pi / 180
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')

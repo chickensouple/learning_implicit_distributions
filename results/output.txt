@@ -1,0 +1,30 @@
+default
+===================
+Mean Reward: -9145.31905263
+Std Reward: 16763.4840411
+Mean Num Nodes: 488.568421053
+Std Num Nodes: 804.323522924
+Mean Num Collision Checks: 8573.01052632
+Std Num Collision Checks: 15801.4605744
+Mean Path Length: 11.4612812334
+Std Path Length: 4.00055191307
+Mean Num Samples: 8574.01052632
+Std Num Samples: 15801.4605744
+
+
+
+model_Arm0
+===================
+Mean Reward: -3326.278125
+Std Reward: 4495.21007003
+Mean Num Nodes: 86.0416666667
+Std Num Nodes: 69.6108104432
+Mean Num Collision Checks: 3110.67708333
+Std Num Collision Checks: 4228.75938883
+Mean Path Length: 11.0402161004
+Std Path Length: 3.17003807715
+Mean Num Samples: 13155.9375
+Std Num Samples: 20077.1166385
+
+
+
