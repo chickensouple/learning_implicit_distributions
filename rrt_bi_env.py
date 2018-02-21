@@ -229,7 +229,8 @@ if __name__ == '__main__':
 
 
     policy = Policy(4)
-    policy.load_model('data/model_envArm3.ckpt.140.ckpt')
+    # policy.load_model('data/model_envArm3.ckpt.140.ckpt')
+    policy.load_model('good_models/model_envArm3/model_envArm3.ckpt.140.ckpt')
 
 
     obs = rrt.reset()

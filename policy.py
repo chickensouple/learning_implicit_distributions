@@ -11,6 +11,9 @@ class DefaultPolicy(object):
     def get_action(self, obs):
         return 1
 
+    def get_actions(self, obs):
+        return np.ones(obs.shape[0], dtype=np.bool)
+
 class BallTreePolicy(object):
     def __init__(self):
         pass
@@ -45,10 +48,8 @@ class Policy(object):
         with tf.variable_scope('policy'):
             self.state_input = tf.placeholder(tf.float32, [None, num_feats], name='state_input')
 
-
             # used for batch norm
-            self.is_train = tf.placeholder(tf.bool, name='is_train')
-            
+            self.is_train = tf.placeholder(tf.bool, (), name='is_train')
 
             layer1 = tf.contrib.layers.fully_connected(self.state_input, 
                 32, 
@@ -128,6 +129,28 @@ class Policy(object):
         action = int(x < accept_prob)
 
         return action
+
+
+    # get multiple actions
+    def get_actions(self, obs):
+        fd = {self.state_input: obs, self.is_train: np.array(False)}
+        prob = self.sess.run(self.prob, feed_dict=fd).squeeze()
+        if len(prob.shape) < 2:
+            prob = np.array([prob])
+        accept_prob = prob[:, 0]
+        x = np.random.random_sample(accept_prob.shape)
+
+
+        actions = x < accept_prob
+        return actions
+
+    def get_probs(self, obs):
+        fd = {self.state_input: obs, self.is_train: np.array(False)}
+        prob = self.sess.run(self.prob, feed_dict=fd).squeeze()
+        accept_prob = prob[:, 0]
+
+        return accept_prob
+
 
 
     def get_prob(self, feats):

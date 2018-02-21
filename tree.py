@@ -95,9 +95,10 @@ class Tree(object):
             ax = plt.gca()
 
         if np.any(im != None):
-            plt.imshow(im, interpolation='nearest', 
+            plt.imshow(1-im, interpolation='nearest', 
                 extent=[0, im.shape[0], 0, im.shape[1]],
-                origin='lower')
+                origin='lower',
+                cmap='Greys')
         if np.all(goal != None):
             plt.scatter(goal[1], goal[0], color='red')        
         for node1_idx, node2_idx in self.c_p_edges.iteritems():

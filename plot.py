@@ -10,6 +10,9 @@ from policy import *
 from utils import *
 from generate_data import generate_data
 from rrt_connect_env import RRTConnectEnv
+from rrt_bi_env import RRTBiEnv
+
+
 
 
 
@@ -21,7 +24,7 @@ def plot_policy_comparisons():
     # dynamic domain
     plt.subplot(1, 2, 1)
     obs = np.array([np.linspace(-10, 10, 100)]).T
-    fd = {policy.state_input: obs, policy.is_train: np.array([False])}
+    fd = {policy.state_input: obs, policy.is_train: np.array(False)}
     probs = policy.sess.run(policy.prob, feed_dict=fd)
 
     plt.title("Flytrap A")
@@ -35,11 +38,10 @@ def plot_policy_comparisons():
     plt.plot(obs, dd_rrt, c='b', linestyle='-', label='Dynamic Domain')
     plt.legend()
 
-
     policy.load_model('data/model_envB3.ckpt')
     plt.subplot(1, 2, 2)
     obs = np.array([np.linspace(-2, 10, 100)]).T
-    fd = {policy.state_input: obs, policy.is_train: np.array([False])}
+    fd = {policy.state_input: obs, policy.is_train: np.array(False)}
     probs = policy.sess.run(policy.prob, feed_dict=fd)
 
     plt.title("Flytrap B")
@@ -57,7 +59,7 @@ def plot_policy_comparisons():
 
 def plot_feat(policy, **kwargs):
     obs = np.array([np.linspace(-10, 10, 100)]).T
-    fd = {policy.state_input: obs, policy.is_train: np.array([False])}
+    fd = {policy.state_input: obs, policy.is_train: np.array(False)}
     probs = policy.sess.run(policy.prob, feed_dict=fd)
 
     plt.plot(obs, probs[:, 0], **kwargs)
@@ -142,7 +144,7 @@ def dist_model_a1():
             feat = rrt.config['feat'](ob, rrt.tree, rrt.map_info)
             feats[i] = feat
 
-        fd = {policy.state_input: feats, policy.is_train: np.array([False])}
+        fd = {policy.state_input: feats, policy.is_train: np.array(False)}
         probs = policy.sess.run(policy.prob, feed_dict=fd)
 
         probs = probs[:, 0]
@@ -154,7 +156,7 @@ def dist_model_a1():
         ax.clear()
         xx, yy = np.meshgrid(np.linspace(0, data.shape[0]-1, data.shape[0]), np.linspace(0, data.shape[1]-1, data.shape[1]))
         zz = np.zeros(xx.shape)
-        ax.plot_surface(xx, yy, zz, rstride=1, cstride=1, facecolors=plt.cm.plasma(data), shade=False)
+        ax.plot_surface(xx, yy, zz, rstride=1, cstride=1, facecolors=plt.cm.Greys(1-data), shade=False)
         ax.set_xlabel('x')
         ax.set_ylabel('y')
 
@@ -249,10 +251,21 @@ def plot_arm_policy():
     # accept_probs = probs[:, 0]
     
 
+    feat1 = np.linspace(0, 0.5, 2000)
+    feat2 = np.linspace(0, 0.5, 2000)
+    feat3 = np.linspace(0, 0.5, 2000)
     feat4 = np.linspace(0, 1., 2000)
     feat_list = []
-    for f4 in feat4:
-        feat_list.append(np.array([0.5, 0.01, 0.01, f4]))
+
+    for f1 in feat1:
+        feat_list.append(np.array([f1, 0.01, 0.01, 0.1]))
+    # for f2 in feat2:
+    #     feat_list.append(np.array([0.01, f2, 0.01, 0.1]))
+    # for f3 in feat3:
+    #     feat_list.append(np.array([0.01, 0.01, f3, 0.1]))
+    # for f4 in feat4:
+    #     feat_list.append(np.array([0.5, 0.01, 0.01, f4]))
+
     feat_list = np.array(feat_list)
 
 
@@ -265,13 +278,474 @@ def plot_arm_policy():
 
 
 
+def sample_points(npts, config, policy, env, map_info):
+    accepted_pts = np.zeros((0, 7))
+
+    pts_to_sample = npts
+
+    while len(accepted_pts) < npts:
+        feats = []
+        pts = []
+        for i in range(pts_to_sample):
+            sample = config['random_sample'](map_info)
+            pts.append(sample)
+            feats.append(config['feat'](sample, env.trees, map_info, 1))
+
+        feats = np.array(feats)
+        pts = np.array(pts)
+        actions = policy.get_actions(feats)
+
+
+        accepted_pts = np.append(accepted_pts, pts[actions, :], axis=0)
+
+        pts_to_sample -= np.sum(actions)
+
+    return accepted_pts
+
+
+def sample_points2(npts, config, policy, env, map_info):
+    feats = []
+    pts = []
+    for i in range(npts):
+        sample = config['random_sample'](map_info)
+        pts.append(sample)
+        feats.append(config['feat'](sample, env.trees, map_info, env.tree_idx))
+
+    feats = np.array(feats)
+    pts = np.array(pts)
+
+    accept_probs = policy.get_probs(feats)
+    return pts, accept_probs
+
+
+def plot_pointcloud():
+    import rospy
+    import scipy.io
+    import sensor_msgs.point_cloud2
+    from sensor_msgs.msg import PointCloud2
+    from sensor_msgs.msg import PointField
+    from std_msgs.msg import Header
+    import arm
+
+    mat = scipy.io.loadmat('pointclouddata/processed_11_color.mat')
+    color_pointcloud = mat['save_struct'][0, 0]['points']
+
+
+    mat2 = scipy.io.loadmat('pointclouddata/processed_11.mat')
+    pointcloud = mat2['save_struct'][0, 0]
+
+    qstart = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
+    qgoal = np.array([85, -40, 0, -90, 90, 0, 0]) * math.pi / 180
+
+    arm_data_dict = arm.arm_map_create(pointcloud, qstart, qgoal)
+    arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
+    arm_config = {'collision_check': arm.arm_collision_check,
+                  'random_sample': arm_random_sampler,
+                  'steer': arm.arm_steer,
+                  'dist': arm.arm_dist_func,
+                  'goal_region': arm.arm_goal_region,
+                  'feat': arm.arm_feat_bi}
+
+    policy = Policy(4)
+    policy.load_model('good_models/model_envArm3/model_envArm3.ckpt.140.ckpt')
+
+
+    env = RRTBiEnv(arm_config, arm_data_dict)
+
+    def create_pointcloudrgb_msg(pointcloud):
+        pc = np.array(pointcloud, dtype=np.float32)
+
+        xfield = PointField()
+        xfield.name = 'x'
+        xfield.datatype = PointField.FLOAT32
+        xfield.offset = 0
+        xfield.count = 1
+
+
+        yfield = PointField()
+        yfield.name = 'y'
+        yfield.datatype = PointField.FLOAT32
+        yfield.offset = 4
+        yfield.count = 1
+
+
+        zfield = PointField()
+        zfield.name = 'z'
+        zfield.datatype = PointField.FLOAT32
+        zfield.offset = 8
+        zfield.count = 1
+
+
+        rgbfield = PointField()
+        rgbfield.name = 'rgb'
+        rgbfield.datatype = PointField.FLOAT32 # UINT32?
+        rgbfield.offset = 12
+        rgbfield.count = 1
+
+
+        fields = [xfield, yfield, zfield, rgbfield]
+        header = Header()
+        header.frame_id = 'map'
+
+        msg = sensor_msgs.point_cloud2.create_cloud(header, fields, pointcloud)
+        return msg
+
+    def create_pointcloud_msg(pointcloud):
+        header = Header()
+        header.frame_id = 'map'
+        msg = sensor_msgs.point_cloud2.create_cloud_xyz32(header, pointcloud)
+        return msg
+
+    # ros initialization
+    rospy.init_node('pc')
+    env_pub = rospy.Publisher('/processed_pc', PointCloud2, queue_size=1)
+    policy_pub = rospy.Publisher('/policy_samples', PointCloud2, queue_size=1)
+    rand_pub = rospy.Publisher('/random_samples', PointCloud2, queue_size=1)
+
+
+    pc_msg = create_pointcloudrgb_msg(color_pointcloud)
+
+
+    np.random.seed(1)
+    # Planning
+    print("Starting planning")
+    obs = env.reset()
+    i = 0
+    while i < 100:
+        action = policy.get_action(obs)
+        obs, reward, done, _ = env.step(action)
+        if done:
+            print("done")
+            break
+        i += 1
+    print("Ended Planning")
+
+    num_nodes = len(env.trees[0].node_states) + len(env.trees[1].node_states)
+    print("Num Nodes: " + str(num_nodes))
+
+
+    print("Sampling Points")
+    samples, accept_probs = sample_points2(500, arm_config, policy, env, arm_data_dict)
+    print("Done Sampling Points")
+    accept_probs = accept_probs / np.sum(accept_probs)
+    accept_probs = np.array([accept_probs]).T
+
+    def get_end_pts(samples):
+        pts = []
+        for sample in samples:
+            _, pt = arm.kinematics_forward_l_default(sample)
+            pts.append(pt[4])
+        pts = np.array(pts, dtype=np.float32)
+        return pts
+
+    end_pts = get_end_pts(samples)
+    policy_pts = np.append(end_pts, accept_probs, axis=1)
+    sample_pts = np.append(end_pts, np.ones(accept_probs.shape) / len(accept_probs), axis=1)
+
+    pc_sample_policy = create_pointcloudrgb_msg(policy_pts)
+    pc_sample_default = create_pointcloudrgb_msg(sample_pts)
+
+
+    rate = rospy.Rate(5)
+    while not rospy.is_shutdown():
+        env_pub.publish(pc_msg)
+        policy_pub.publish(pc_sample_policy)
+        rand_pub.publish(pc_sample_default)
+        rate.sleep()
+
+
+
+def plot_flytrap_results():
+    test_data = np.array([[-25175.06 , 9594.86 , 1379.99 , 408.87 , 23550.35 , 9290.34 , 66.25 , 23.27 , 24572.26 , 9496.08],
+        [-5871.18 , 2348.53 , 1200.80 , 390.08 , 4345.09 , 1917.38 , 59.78 , 22.18 , 32629.19 , 13741.52 ],
+        [-13687.95 , 11152.37 , 4532.97 , 3689.05 , 9066.31 , 7389.49 , 29.08 , 3.09 , 9067.31 , 7389.49],
+        [-7317.60 , 5180.82 , 1903.06 , 1289.92 , 5263.22 , 3778.53 , 28.87 , 2.98 , 15331.89 , 11297.62],
+        [-11622.73 , 17522.95 , 3227.25 , 4028.50 , 4787.72 , 6024.75 , 33.88 , 6.12 , 360976.14 , 780852.07],
+        [-10734.36 , 18960.83 , 1677.75 , 2135.32 , 3093.38 , 3997.80 , 33.17 , 7.03 , 596522.64 , 1321001.90]])
+
+    ind = np.arange(5, dtype=np.float)
+    width = 0.4
+
+    multipliers = [np.array([-6, 30, 5, 1500, 1]), np.array([-6, 30, 5, 1500, 1]), np.array([-6, 30, 5, 1500, 0.15])]
+
+
+    labels = ['RRT', 'Trained RRT', 'BiRRT', 'Trained BiRRT', 'EST', 'Trained EST']
+
+    def autolabel(rects, vals):
+        """
+        Attach a text label above each bar displaying its height
+        """
+        for idx, (rect, val) in enumerate(zip(rects, vals)):
+            height = rect.get_height()
+            if idx == 3:
+                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                        '%0.1f' % val,
+                        ha='center', va='bottom')
+            else:
+                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                        '%d' % val,
+                        ha='center', va='bottom')
+
+
+    for i in range(3):
+        fig, ax = plt.subplots()
+        idx1 = i*2
+        idx2 = idx1 + 1
+
+        rects1 = ax.bar(ind, 
+            test_data[idx1, 0::2] * multipliers[i], 
+            width, 
+            color='r', 
+            yerr=test_data[idx1, 1::2] * multipliers[i], 
+            ecolor='tab:gray', 
+            capsize=10,
+            error_kw={'elinewidth': 1})
+
+        rects2 = ax.bar(ind+width, 
+            test_data[idx2, 0::2] * multipliers[i], 
+            width, 
+            color='b', 
+            yerr=test_data[idx2, 1::2] * multipliers[i], 
+            ecolor='tab:gray', 
+            capsize=10,
+            error_kw={'elinewidth': 1})
+
+        ax.legend((rects1[0], rects2[0]), (labels[idx1], labels[idx2]))
+        ax.set_xticks(ind + width/2)
+        ax.set_xticklabels(('Cost', 'NumNodes', 'CollisionChecks', 'PathLength', 'NumSamples'))
+        ax.get_yaxis().set_ticks([])
+        autolabel(rects1, test_data[idx1, 0::2])
+        autolabel(rects2, test_data[idx2, 0::2])
+
+    plt.show()
+
+def plot_flytrap_results2():
+    test_data = np.array([[-25175.06 , 9594.86 , 1379.99 , 408.87 , 23550.35 , 9290.34 , 66.25 , 23.27 , 24572.26 , 9496.08],
+        [-5871.18 , 2348.53 , 1200.80 , 390.08 , 4345.09 , 1917.38 , 59.78 , 22.18 , 32629.19 , 13741.52 ],
+        [-13687.95 , 11152.37 , 4532.97 , 3689.05 , 9066.31 , 7389.49 , 29.08 , 3.09 , 9067.31 , 7389.49],
+        [-7317.60 , 5180.82 , 1903.06 , 1289.92 , 5263.22 , 3778.53 , 28.87 , 2.98 , 15331.89 , 11297.62],
+        [-11622.73 , 17522.95 , 3227.25 , 4028.50 , 4787.72 , 6024.75 , 33.88 , 6.12 , 360976.14 , 780852.07],
+        [-10734.36 , 18960.83 , 1677.75 , 2135.32 , 3093.38 , 3997.80 , 33.17 , 7.03 , 596522.64 , 1321001.90]])
+
+    test_data[:, 0] *= -1
+
+    ind = np.arange(3, dtype=np.float)
+    width = 0.4
+
+
+    labels = ['Original Distribution', 'Trained Distribution']
+
+    def autolabel(rects, vals):
+        """
+        Attach a text label above each bar displaying its height
+        """
+        for idx, (rect, val) in enumerate(zip(rects, vals)):
+            height = rect.get_height()
+            if idx == 3:
+                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                        '%0.1f' % val,
+                        ha='center', va='bottom')
+            else:
+                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                        '%d' % val,
+                        ha='center', va='bottom')
+
+    titles = ['Cost', 'Number of Tree Nodes', 'Number of Collision Checks', 'Path Length', 'Number of Samples']
+
+
+    for i in range(5):
+        fig, ax = plt.subplots()
+        idx1 = i*2
+        idx2 = idx1 + 1
+
+
+        rects1 = ax.bar(ind, 
+            test_data[0::2, idx1], 
+            width, 
+            color='r', 
+            yerr=test_data[0::2, idx2], 
+            ecolor='tab:gray', 
+            capsize=10,
+            error_kw={'elinewidth': 1})
+
+        rects2 = ax.bar(ind+width, 
+            test_data[1::2, idx1],
+            width, 
+            color='b', 
+            yerr=test_data[1::2, idx2], 
+            ecolor='tab:gray', 
+            capsize=10,
+            error_kw={'elinewidth': 1})
+
+
+
+        if i == 4:
+            ax.legend((rects1[0], rects2[0]), (labels[0], labels[1]))
+
+        ax.set_xticks(ind + width/2)
+        ax.set_xticklabels(('RRT', 'BiRRT', 'EST'))
+        ax.get_yaxis().set_ticks([])
+
+
+
+        ylim = ax.get_ylim()
+        ylim = list(ylim)
+        ylim[0] = 0
+        ax.set_ylim(ylim)
+
+
+
+        autolabel(rects1, test_data[0::2, idx1])
+        autolabel(rects2, test_data[1::2, idx1])
+        plt.title(titles[i])
+
+    plt.show()
+
+def plot_arm_results():
+    test_data = np.array([[-9145.32 , 16763.48 , 488.57 , 804.32 , 8573.01 , 15801.46 , 11.46 , 4.00 , 8574.01 , 15801.46],
+        [-3326.28 , 4495.21 , 86.04 , 69.61 , 3110.68 , 4228.76 , 11.04 , 3.17 , 13155.94 , 20077.12]])
+
+    ind = np.arange(5, dtype=np.float)
+    width = 0.4
+
+    multipliers = np.array([-3, 30, 2, 1500, 1])
+
+    labels = ['BiRRT', 'Trained BiRRT']
+
+    def autolabel(rects, vals):
+        """
+        Attach a text label above each bar displaying its height
+        """
+        for idx, (rect, val) in enumerate(zip(rects, vals)):
+            height = rect.get_height()
+            if idx == 3:
+                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                        '%0.1f' % val,
+                        ha='center', va='bottom')
+            else:
+                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                        '%d' % val,
+                        ha='center', va='bottom')
+
+    fig, ax = plt.subplots()
+
+    rects1 = ax.bar(ind, 
+        test_data[0, 0::2] * multipliers, 
+        width, 
+        color='r', 
+        yerr=test_data[0, 1::2] * multipliers, 
+        ecolor='tab:gray', 
+        capsize=10,
+        error_kw={'elinewidth': 1})
+
+    rects2 = ax.bar(ind+width, 
+        test_data[1, 0::2] * multipliers, 
+        width, 
+        color='b', 
+        yerr=test_data[1, 1::2] * multipliers, 
+        ecolor='tab:gray', 
+        capsize=10,
+        error_kw={'elinewidth': 1})
+
+    ax.legend((rects1[0], rects2[0]), (labels[0], labels[1]))
+    ax.set_xticks(ind + width/2)
+    ax.set_xticklabels(('Cost', 'NumNodes', 'CollisionChecks', 'PathLength', 'NumSamples'))
+    ax.get_yaxis().set_ticks([])
+    autolabel(rects1, test_data[0, 0::2])
+    autolabel(rects2, test_data[1, 0::2])
+
+    plt.show()
+
+
+def plot_arm_results2():
+    test_data = np.array([[-9145.32 , 16763.48 , 488.57 , 804.32 , 8573.01 , 15801.46 , 11.46 , 4.00 , 8574.01 , 15801.46],
+        [-3326.28 , 4495.21 , 86.04 , 69.61 , 3110.68 , 4228.76 , 11.04 , 3.17 , 13155.94 , 20077.12]])
+
+    test_data[:, 0] *= -1
+
+    ind = np.arange(1, dtype=np.float)
+    width = 0.4
+
+    labels = ['Cost', 'Num Nodes', 'Collision Checks', 'Path Length', 'Num Samples']
+
+    def autolabel(rects, vals, offset=0):
+        """
+        Attach a text label above each bar displaying its height
+        """
+        for idx, (rect, val) in enumerate(zip(rects, vals)):
+            # height = rect.get_height()
+            width = rect.get_width()
+            # ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+            #         '%0.1f' % val,
+            #         ha='center', va='bottom')
+            ax.text(width+offset, rect.get_y() + rect.get_height()/2,
+                    '%0.1f' % val,
+                    ha='center', va='bottom')
+
+
+    offsets = [1500, 60, 1500, 1, 3000]
+
+    for i in range(5):
+        ax = plt.subplot(5, 1, i+1)
+        idx1 = i*2
+        idx2 = idx1 + 1
+
+
+        rects1 = ax.barh(ind, 
+            test_data[0, idx1], 
+            width, 
+            color='r', 
+            xerr=test_data[0, idx2], 
+            ecolor='tab:gray', 
+            capsize=10,
+            error_kw={'elinewidth': 1})
+
+        rects2 = ax.barh(ind+width, 
+            test_data[1, idx1], 
+            width, 
+            color='b', 
+            xerr=test_data[1, idx2], 
+            ecolor='tab:gray', 
+            capsize=10,
+            error_kw={'elinewidth': 1})
+
+
+        if i == 2:
+            ax.legend((rects1[0], rects2[0]), ('BiRRT', 'Trained BiRRT'))
+
+        ax.set_yticks(ind + width/2)
+        ax.set_yticklabels((labels[i],), minor=False)
+        # plt.yticks(ind + width/2, labels[i])
+        ax.invert_yaxis()
+        ax.get_xaxis().set_ticks([])
+
+        xlim = ax.get_xlim()
+        xlim = list(xlim)
+        xlim[0] = 0
+        ax.set_xlim(xlim)
+
+        autolabel(rects1, [test_data[0, idx1]], offsets[i])
+        autolabel(rects2, [test_data[1, idx1]], offsets[i])
+
+    plt.show()
 
 if __name__ == '__main__':
+    plt.rcParams.update({'font.size': 18})
+    # font = {'family' : 'normal',
+    #         'weight' : 'bold',
+    #         'size'   : 18}
+
+    # plt.rc('font', **font)
+
     # plot_model_a1()
     # dist_model_a1()
-    # plot_policy_comparisons()
-    plot_arm_policy()
-
+    plot_policy_comparisons()
+    # plot_arm_policy()
+    # plot_pointcloud()
+    # plot_flytrap_results()
+    # plot_arm_results()
+    # plot_flytrap_results2()
+    # plot_arm_results2()
 
 
 

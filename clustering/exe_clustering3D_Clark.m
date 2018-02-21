@@ -2,14 +2,16 @@
 % load drillmodel_full   
 clc; clear all; close all
 
-pc_num = 10;
+pc_num = 11;
 
 load_file = strcat('pointcloud', num2str(pc_num), '.mat');
 store_file = strcat('processed_', num2str(pc_num), '.mat');
 
-load(load_file)
-points = transform_pointcloud(points);
 
+load(load_file)
+color_points = points;
+points = transform_pointcloud(points);
+points(:, 4) = color_points(:, 4);
 
 PLOT_THRES = 60;
 samples = points(randperm(length(points),30000),1:4);
@@ -34,7 +36,7 @@ grid on;
 [Centers, betas, Theta,num_centers, Means, Sigmas] = runRBFN3D([Q']);
 
 
-save_struct = struct('points', points(:, 1:3), 'means', Means, 'sigmas', Sigmas);
+save_struct = struct('points', points(:, 1:4), 'means', Means, 'sigmas', Sigmas);
 save(store_file, "save_struct")
 
 for fig_k =1:num_centers

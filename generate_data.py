@@ -183,11 +183,12 @@ if __name__ == '__main__':
     while 1:
         plt.cla()
         np.random.seed(0)
-        data_dict = generate_data('fly_trap_fixed_a_test')
+        data_dict = generate_data('fly_trap_fixed_b')
         im = data_dict['map']
-        fig = plt.imshow(im, interpolation='nearest', 
+        fig = plt.imshow(1-im, interpolation='nearest', 
             extent=[0, im.shape[0], 0, im.shape[1]],
-            origin='lower')
+            origin='lower',
+            cmap='Greys')
         goal = data_dict['goal']
         plt.scatter(goal[1], goal[0], color='red')
         start = data_dict['start']
