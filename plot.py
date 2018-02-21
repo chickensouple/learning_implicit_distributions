@@ -27,7 +27,7 @@ def plot_policy_comparisons():
     fd = {policy.state_input: obs, policy.is_train: np.array(False)}
     probs = policy.sess.run(policy.prob, feed_dict=fd)
 
-    plt.title("Flytrap A")
+    plt.title("Flytrap Train Environment")
 
     plt.plot(obs, probs[:, 0], c='r', label='Learned Policy')
     plt.xlabel("feature")
@@ -44,7 +44,7 @@ def plot_policy_comparisons():
     fd = {policy.state_input: obs, policy.is_train: np.array(False)}
     probs = policy.sess.run(policy.prob, feed_dict=fd)
 
-    plt.title("Flytrap B")
+    plt.title("Flytrap BallTree Environment")
 
     plt.plot(obs, probs[:, 0], c='r', label='Learned Policy')
     plt.xlabel("feature")
