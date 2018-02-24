@@ -425,7 +425,7 @@ def plot_pointcloud():
 
 
     print("Sampling Points")
-    samples, accept_probs = sample_points2(500, arm_config, policy, env, arm_data_dict)
+    samples, accept_probs = sample_points2(400, arm_config, policy, env, arm_data_dict)
     print("Done Sampling Points")
     accept_probs = accept_probs / np.sum(accept_probs)
     accept_probs = np.array([accept_probs]).T
@@ -453,71 +453,6 @@ def plot_pointcloud():
         rand_pub.publish(pc_sample_default)
         rate.sleep()
 
-
-
-def plot_flytrap_results():
-    test_data = np.array([[-25175.06 , 9594.86 , 1379.99 , 408.87 , 23550.35 , 9290.34 , 66.25 , 23.27 , 24572.26 , 9496.08],
-        [-5871.18 , 2348.53 , 1200.80 , 390.08 , 4345.09 , 1917.38 , 59.78 , 22.18 , 32629.19 , 13741.52 ],
-        [-13687.95 , 11152.37 , 4532.97 , 3689.05 , 9066.31 , 7389.49 , 29.08 , 3.09 , 9067.31 , 7389.49],
-        [-7317.60 , 5180.82 , 1903.06 , 1289.92 , 5263.22 , 3778.53 , 28.87 , 2.98 , 15331.89 , 11297.62],
-        [-11622.73 , 17522.95 , 3227.25 , 4028.50 , 4787.72 , 6024.75 , 33.88 , 6.12 , 360976.14 , 780852.07],
-        [-10734.36 , 18960.83 , 1677.75 , 2135.32 , 3093.38 , 3997.80 , 33.17 , 7.03 , 596522.64 , 1321001.90]])
-
-    ind = np.arange(5, dtype=np.float)
-    width = 0.4
-
-    multipliers = [np.array([-6, 30, 5, 1500, 1]), np.array([-6, 30, 5, 1500, 1]), np.array([-6, 30, 5, 1500, 0.15])]
-
-
-    labels = ['RRT', 'Trained RRT', 'BiRRT', 'Trained BiRRT', 'EST', 'Trained EST']
-
-    def autolabel(rects, vals):
-        """
-        Attach a text label above each bar displaying its height
-        """
-        for idx, (rect, val) in enumerate(zip(rects, vals)):
-            height = rect.get_height()
-            if idx == 3:
-                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                        '%0.1f' % val,
-                        ha='center', va='bottom')
-            else:
-                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                        '%d' % val,
-                        ha='center', va='bottom')
-
-
-    for i in range(3):
-        fig, ax = plt.subplots()
-        idx1 = i*2
-        idx2 = idx1 + 1
-
-        rects1 = ax.bar(ind, 
-            test_data[idx1, 0::2] * multipliers[i], 
-            width, 
-            color='r', 
-            yerr=test_data[idx1, 1::2] * multipliers[i], 
-            ecolor='tab:gray', 
-            capsize=10,
-            error_kw={'elinewidth': 1})
-
-        rects2 = ax.bar(ind+width, 
-            test_data[idx2, 0::2] * multipliers[i], 
-            width, 
-            color='b', 
-            yerr=test_data[idx2, 1::2] * multipliers[i], 
-            ecolor='tab:gray', 
-            capsize=10,
-            error_kw={'elinewidth': 1})
-
-        ax.legend((rects1[0], rects2[0]), (labels[idx1], labels[idx2]))
-        ax.set_xticks(ind + width/2)
-        ax.set_xticklabels(('Cost', 'NumNodes', 'CollisionChecks', 'PathLength', 'NumSamples'))
-        ax.get_yaxis().set_ticks([])
-        autolabel(rects1, test_data[idx1, 0::2])
-        autolabel(rects2, test_data[idx2, 0::2])
-
-    plt.show()
 
 def plot_flytrap_results2():
     test_data = np.array([[-25175.06 , 9594.86 , 1379.99 , 408.87 , 23550.35 , 9290.34 , 66.25 , 23.27 , 24572.26 , 9496.08],
@@ -550,7 +485,7 @@ def plot_flytrap_results2():
                         '%d' % val,
                         ha='center', va='bottom')
 
-    titles = ['Cost', 'Number of Tree Nodes', 'Number of Collision Checks', 'Path Length', 'Number of Samples']
+    titles = ['Cost', 'Number of Tree Nodes', 'Number of Collision Checks', 'Path Length (m)', 'Number of Samples']
 
 
     for i in range(5):
@@ -598,61 +533,6 @@ def plot_flytrap_results2():
         autolabel(rects1, test_data[0::2, idx1])
         autolabel(rects2, test_data[1::2, idx1])
         plt.title(titles[i])
-
-    plt.show()
-
-def plot_arm_results():
-    test_data = np.array([[-9145.32 , 16763.48 , 488.57 , 804.32 , 8573.01 , 15801.46 , 11.46 , 4.00 , 8574.01 , 15801.46],
-        [-3326.28 , 4495.21 , 86.04 , 69.61 , 3110.68 , 4228.76 , 11.04 , 3.17 , 13155.94 , 20077.12]])
-
-    ind = np.arange(5, dtype=np.float)
-    width = 0.4
-
-    multipliers = np.array([-3, 30, 2, 1500, 1])
-
-    labels = ['BiRRT', 'Trained BiRRT']
-
-    def autolabel(rects, vals):
-        """
-        Attach a text label above each bar displaying its height
-        """
-        for idx, (rect, val) in enumerate(zip(rects, vals)):
-            height = rect.get_height()
-            if idx == 3:
-                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                        '%0.1f' % val,
-                        ha='center', va='bottom')
-            else:
-                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                        '%d' % val,
-                        ha='center', va='bottom')
-
-    fig, ax = plt.subplots()
-
-    rects1 = ax.bar(ind, 
-        test_data[0, 0::2] * multipliers, 
-        width, 
-        color='r', 
-        yerr=test_data[0, 1::2] * multipliers, 
-        ecolor='tab:gray', 
-        capsize=10,
-        error_kw={'elinewidth': 1})
-
-    rects2 = ax.bar(ind+width, 
-        test_data[1, 0::2] * multipliers, 
-        width, 
-        color='b', 
-        yerr=test_data[1, 1::2] * multipliers, 
-        ecolor='tab:gray', 
-        capsize=10,
-        error_kw={'elinewidth': 1})
-
-    ax.legend((rects1[0], rects2[0]), (labels[0], labels[1]))
-    ax.set_xticks(ind + width/2)
-    ax.set_xticklabels(('Cost', 'NumNodes', 'CollisionChecks', 'PathLength', 'NumSamples'))
-    ax.get_yaxis().set_ticks([])
-    autolabel(rects1, test_data[0, 0::2])
-    autolabel(rects2, test_data[1, 0::2])
 
     plt.show()
 
@@ -739,11 +619,9 @@ if __name__ == '__main__':
 
     # plot_model_a1()
     # dist_model_a1()
-    plot_policy_comparisons()
+    # plot_policy_comparisons()
     # plot_arm_policy()
-    # plot_pointcloud()
-    # plot_flytrap_results()
-    # plot_arm_results()
+    plot_pointcloud()
     # plot_flytrap_results2()
     # plot_arm_results2()
 
