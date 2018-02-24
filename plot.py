@@ -29,13 +29,13 @@ def plot_policy_comparisons():
 
     plt.title("Flytrap Train Environment")
 
-    plt.plot(obs, probs[:, 0], c='r', label='Learned Policy')
+    plt.plot(obs, probs[:, 0], c='r', label='Learned Policy', linewidth=4.)
     plt.xlabel("feature")
     plt.ylabel("p(accept)")
 
     dd_rrt = np.heaviside(obs, 1)
     dd_rrt = dd_rrt[::-1]
-    plt.plot(obs, dd_rrt, c='b', linestyle='-', label='Dynamic Domain')
+    plt.plot(obs, dd_rrt, c='b', linestyle='--', label='Dynamic Domain', linewidth=4.)
     plt.legend()
 
     policy.load_model('data/model_envB3.ckpt')
@@ -46,12 +46,12 @@ def plot_policy_comparisons():
 
     plt.title("Flytrap BallTree Environment")
 
-    plt.plot(obs, probs[:, 0], c='r', label='Learned Policy')
+    plt.plot(obs, probs[:, 0], c='r', label='Learned Policy', linewidth=4.)
     plt.xlabel("feature")
     plt.ylabel("p(accept)")
 
     dd_rrt = np.heaviside(obs, 1)
-    plt.plot(obs, dd_rrt, c='b', linestyle='-', label='BallTree')
+    plt.plot(obs, dd_rrt, c='b', linestyle='--', label='BallTree', linewidth=4.)
     plt.legend()
 
 
@@ -619,9 +619,9 @@ if __name__ == '__main__':
 
     # plot_model_a1()
     # dist_model_a1()
-    # plot_policy_comparisons()
+    plot_policy_comparisons()
     # plot_arm_policy()
-    plot_pointcloud()
+    # plot_pointcloud()
     # plot_flytrap_results2()
     # plot_arm_results2()
 
