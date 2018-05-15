@@ -130,6 +130,15 @@ class Policy(object):
 
         return action
 
+    def get_action_multiple(self, obs):
+        fd = {self.state_input: obs, self.is_train: np.array(False)}
+        probs = self.sess.run(self.prob, feed_dict=fd).squeeze()
+
+        accept_probs = probs[:, 0]
+        x = np.random.random_sample(accept_probs.shape)
+        actions = x < accept_probs
+        return actions
+
 
     # get multiple actions
     def get_actions(self, obs):

@@ -123,83 +123,85 @@ if __name__ == '__main__':
     from tqdm import tqdm
     import time
 
-    # l2_data_dict = generate_data('rooms', dubins=False)
-    # l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
-    # l2_goal = l2_goal_region
-    # l2_config = {'collision_check': map_collision_check,
-    #           'random_sample': l2_random_sampler,
-    #           'steer': holonomic_steer,
-    #           'dist': l2_dist,
-    #           'goal_region': l2_goal,
-    #           'feat': get_feat_flytrap,
-    #           'num_feat': 1}
+    np.random.seed()
+    l2_data_dict = generate_data('rooms', dubins=False)
+    l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
+    l2_goal = l2_goal_region
+    l2_config = {'collision_check': map_collision_check,
+              'random_sample': l2_random_sampler,
+              'steer': holonomic_steer,
+              'dist': l2_dist,
+              'goal_region': l2_goal,
+              'feat': get_feat_flytrap,
+              'num_feat': 1}
 
-    # rrt = RRTConnectEnv(l2_config, l2_data_dict)
-    # # policy = BallTreePolicy()
+    rrt = RRTConnectEnv(l2_config, l2_data_dict)
+    # policy = BallTreePolicy()
     # policy = DynamicDomainPolicy()
-    # # policy = DefaultPolicy()
-    # # policy = Policy(l2_config['num_feat'])
-
-    # obs = rrt.reset()
-    # done = False
-
-    # idx = 0
-    # while not done:
-    #     action = policy.get_action(obs)
-    #     obs, reward, done, _ = rrt.step(action)
-        
-    #     idx += 1
-
-
-    # rrt.show()
-    # plt.show()
-
-
-
-
-
-    import arm
-    qstart = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
-    qgoal = np.array([20, -15, 0, 0, 0, 10, 0]) * math.pi / 180
-
-    pointcloud = {'points': np.array([[0, 0, 0]]), 'means': 0, 'sigmas': 0}
+    # policy = DefaultPolicy()
+    policy = Policy(l2_config['num_feat'])
     
-    arm_data_dict = arm.arm_map_create(pointcloud, qstart, qgoal)
-    arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
-    arm_config = {'collision_check': arm.arm_collision_check,
-                  'random_sample': arm_random_sampler,
-                  'steer': arm.arm_steer,
-                  'dist': arm.arm_dist_func,
-                  'goal_region': arm.arm_goal_region,
-                  'feat': arm.arm_feat_single,
-                  'num_feat': 1}
-
-    rrt = RRTConnectEnv(arm_config, arm_data_dict)
-    policy = DefaultPolicy()
-
 
     obs = rrt.reset()
     done = False
+
     idx = 0
     while not done:
         action = policy.get_action(obs)
         obs, reward, done, _ = rrt.step(action)
         
         idx += 1
-    
-    if not rrt.found_path:
-        print("Path Not Found")
 
 
-    path, cost = rrt.get_path()
-    print("Cost: " + str(cost))
-    print("Path Len: " + str(len(path)))
-    print("Path: " + str(path))
-    armv = arm.ArmVisualize()
-    for node in path:
-        q = rrt.tree.node_states[node]
-        armv.plot(q)
-        plt.show(block=False)
-        plt.pause(0.1)
-        raw_input("Press Enter to Continue:")
+    rrt.show()
     plt.show()
+
+
+
+
+
+    # import arm
+    # qstart = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
+    # qgoal = np.array([20, -15, 0, 0, 0, 10, 0]) * math.pi / 180
+
+    # pointcloud = {'points': np.array([[0, 0, 0]]), 'means': 0, 'sigmas': 0}
+    
+    # arm_data_dict = arm.arm_map_create(pointcloud, qstart, qgoal)
+    # arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
+    # arm_config = {'collision_check': arm.arm_collision_check,
+    #               'random_sample': arm_random_sampler,
+    #               'steer': arm.arm_steer,
+    #               'dist': arm.arm_dist_func,
+    #               'goal_region': arm.arm_goal_region,
+    #               'feat': arm.arm_feat_single,
+    #               'num_feat': 1}
+
+    # rrt = RRTConnectEnv(arm_config, arm_data_dict)
+    # policy = DefaultPolicy()
+
+
+    # obs = rrt.reset()
+    # done = False
+    # idx = 0
+    # while not done:
+    #     action = policy.get_action(obs)
+    #     obs, reward, done, _ = rrt.step(action)
+        
+    #     idx += 1
+    
+    # if not rrt.found_path:
+    #     print("Path Not Found")
+
+
+    # path, cost = rrt.get_path()
+    # print("Cost: " + str(cost))
+    # print("Path Len: " + str(len(path)))
+    # print("Path: " + str(path))
+    # armv = arm.ArmVisualize()
+    # for node in path:
+    #     q = rrt.tree.node_states[node]
+    #     armv.plot(q)
+    #     plt.show(block=False)
+    #     plt.pause(0.1)
+    #     raw_input("Press Enter to Continue:")
+    # plt.show()
