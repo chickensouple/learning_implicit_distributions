@@ -87,10 +87,13 @@ def plot_model_a1():
         file = model_dir + 'model_envA1.ckpt.best' + str(num) + '.ckpt'
         policy.load_model(file)
         color = [float(len(numbers)+1-i)/float(len(numbers)+1), 0., float(i)/float(len(numbers)+1)]
-        plot_feat(policy, linestyle='--', c=color)
+        if i == 0:
+            plot_feat(policy, linestyle='-', c=color, linewidth=4.0)
+        else:
+            plot_feat(policy, linestyle='--', c=color, linewidth=4.0)
 
     policy.load_model('good_models/model_envA1.ckpt')
-    plot_feat(policy, linestyle='-', c='b', markersize=2)
+    plot_feat(policy, linestyle='-', c='b', markersize=2, linewidth=4.0)
 
     plt.title('Evolution of Policy over Iterations')
 
@@ -610,7 +613,8 @@ def plot_arm_results2():
     plt.show()
 
 if __name__ == '__main__':
-    plt.rcParams.update({'font.size': 16})
+    # plt.rcParams.update({'font.size': 16})
+    plt.rcParams.update({'font.size': 22})
     plt.rcParams.update({'font.weight': 'bold'})
     # font = {'family' : 'normal',
     #         'weight' : 'bold',
