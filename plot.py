@@ -29,14 +29,14 @@ def plot_policy_comparisons():
 
     plt.title("Flytrap Train Environment")
 
-    plt.plot(obs, probs[:, 0], c='r', label='Learned Policy', linewidth=4.)
+    plt.plot(obs, probs[:, 0], c='b', label='Learned Policy', linewidth=4.)
     plt.xlabel("feature")
     plt.ylabel("p(accept)")
 
     dd_rrt = np.heaviside(obs, 1)
     dd_rrt = dd_rrt[::-1]
-    plt.plot(obs, dd_rrt, c='b', linestyle='--', label='Dynamic Domain', linewidth=4.)
-    plt.legend()
+    plt.plot(obs, dd_rrt, c='r', linestyle='--', label='Dynamic Domain', linewidth=4.)
+    plt.legend(loc='lower left')
 
     policy.load_model('data/model_envB3.ckpt')
     plt.subplot(1, 2, 2)
@@ -46,13 +46,13 @@ def plot_policy_comparisons():
 
     plt.title("Flytrap BallTree Environment")
 
-    plt.plot(obs, probs[:, 0], c='r', label='Learned Policy', linewidth=4.)
+    plt.plot(obs, probs[:, 0], c='b', label='Learned Policy', linewidth=4.)
     plt.xlabel("feature")
     plt.ylabel("p(accept)")
 
     dd_rrt = np.heaviside(obs, 1)
-    plt.plot(obs, dd_rrt, c='b', linestyle='--', label='BallTree', linewidth=4.)
-    plt.legend()
+    plt.plot(obs, dd_rrt, c='r', linestyle='--', label='BallTree', linewidth=4.)
+    plt.legend(loc='lower right')
 
 
     plt.show()
@@ -485,7 +485,7 @@ def plot_flytrap_results2():
                         '%d' % val,
                         ha='center', va='bottom')
 
-    titles = ['Cost', 'Number of Tree Nodes', 'Number of Collision Checks', 'Path Length (m)', 'Number of Samples']
+    titles = ['Search Cost (Negative Reward)', 'Number of Tree Nodes', 'Number of Collision Checks', 'Path Length (m)', 'Number of Samples']
 
 
     for i in range(5):
@@ -514,8 +514,8 @@ def plot_flytrap_results2():
 
 
 
-        if i == 4:
-            ax.legend((rects1[0], rects2[0]), (labels[0], labels[1]))
+        if i == 0:
+            ax.legend((rects1[0], rects2[0]), (labels[0], labels[1]), loc='upper right')
 
         ax.set_xticks(ind + width/2)
         ax.set_xticklabels(('RRT', 'BiRRT', 'EST'))
@@ -544,7 +544,7 @@ def plot_arm_results2():
     test_data[:, 0] *= -1
 
     ind = np.arange(1, dtype=np.float)
-    width = 0.4
+    width = 0.55
 
     labels = ['Cost', 'Num Nodes', 'Collision Checks', 'Path Length', 'Num Samples']
 
@@ -558,12 +558,12 @@ def plot_arm_results2():
             # ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
             #         '%0.1f' % val,
             #         ha='center', va='bottom')
-            ax.text(width+offset, rect.get_y() + rect.get_height()/2,
+            ax.text(width+offset, rect.get_y() + rect.get_height()/1.,
                     '%0.1f' % val,
                     ha='center', va='bottom')
 
 
-    offsets = [1500, 60, 1500, 1, 3000]
+    offsets = [1800, 80, 1800, 1, 3200]
 
     for i in range(5):
         ax = plt.subplot(5, 1, i+1)
@@ -591,7 +591,7 @@ def plot_arm_results2():
 
 
         if i == 2:
-            ax.legend((rects1[0], rects2[0]), ('BiRRT', 'Trained BiRRT'))
+            ax.legend((rects1[0], rects2[0]), ('BiRRT', 'Trained BiRRT'), loc='right')
 
         ax.set_yticks(ind + width/2)
         ax.set_yticklabels((labels[i],), minor=False)
@@ -610,7 +610,8 @@ def plot_arm_results2():
     plt.show()
 
 if __name__ == '__main__':
-    plt.rcParams.update({'font.size': 18})
+    plt.rcParams.update({'font.size': 16})
+    plt.rcParams.update({'font.weight': 'bold'})
     # font = {'family' : 'normal',
     #         'weight' : 'bold',
     #         'size'   : 18}
