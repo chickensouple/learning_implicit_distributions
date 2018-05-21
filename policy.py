@@ -39,7 +39,10 @@ class Policy(object):
         self.num_feats = num_feats
         self._build_model(num_feats)
         if sess == None:
-            self.sess = tf.InteractiveSession()
+            config = tf.ConfigProto(
+                device_count = {'GPU': 0}
+            )
+            self.sess = tf.InteractiveSession(config=config)
             tf.global_variables_initializer().run() 
         else:
             self.sess = sess

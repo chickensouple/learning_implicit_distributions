@@ -10,7 +10,6 @@ from policy import *
 import time
 from tqdm import tqdm
 
-
 import cProfile
 
 def test(env, policy, policyname, niter, file):
@@ -23,6 +22,8 @@ def test(env, policy, policyname, niter, file):
     num_samples = []
 
     num_fail_paths = 0
+
+    start = time.time()
     for i in tqdm(range(niter)):
         _, _, reward = run_env.run(env, max_iter=100000)
 
@@ -31,12 +32,13 @@ def test(env, policy, policyname, niter, file):
             continue
 
         rewards.append(np.sum(reward))
-        num_nodes.append(len(env.tree.node_states))
-        # num_nodes.append(len(env.trees[0].node_states) + len(env.trees[1].node_states))
+        # num_nodes.append(len(env.tree.node_states))
+        num_nodes.append(len(env.trees[0].node_states) + len(env.trees[1].node_states))
         num_collision_checks.append(env.num_collision_checks)
         _, path_len = env.get_path()
         path_lengths.append(path_len)
         num_samples.append(env.samples_drawn)
+    end = time.time()
 
 
     print(policyname)
@@ -52,6 +54,7 @@ def test(env, policy, policyname, niter, file):
     print("Std Path Length: " + str(np.std(path_lengths)))
     print("Mean Num Samples: " + str(np.mean(num_samples)))
     print("Std Num Samples: " + str(np.std(num_samples)))
+    print("Time: " + str(end - start))
 
     file.write(policyname + "\n")
     file.write("===================" + "\n")
@@ -90,32 +93,31 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
 
 
-
     niter = 10
 
     policy1 = DefaultPolicy()
     policy2 = BallTreePolicy()
     policy3 = DynamicDomainPolicy()
-    policy4 = Policy(1)
-    policy4.load_model('data/model_envA1.ckpt')
+    # policy4 = Policy(1)
+    # policy4.load_model('good_models/models/model_envA1/model_envA1.ckpt')
     # policy4.load_model('data/model_envB3.ckpt')
 
     # policy5 = Policy(2)
-    # policy5.load_model('data/model_envA2_est.ckpt.20.ckpt')
-    # policy5.load_model('data/model_envA2_est.ckpt.0.ckpt')
+    # policy5.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
+    # policy5.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.0.ckpt')
 
-    # policy6 = Policy(1)
-    # policy6.load_model('data/model_envA2_bi.ckpt.480.ckpt')
+    policy6 = Policy(1) 
+    policy6.load_model('good_models/models/model_envA2_bi/model_envA2_bi.ckpt.480.ckpt')
 
     # policy7 = Policy(4)
-    # policy7.load_model('data/model_envArm3.ckpt.140.ckpt')
+    # policy7.load_model('good_models/models/model_envArm3.ckpt/model_envArm3.ckpt.140.ckpt')
 
     policies = [\
         # [policy1, 'default'],
-        # [policy7, 'model_Arm0']
+        # [policy7, 'model_Arm3']
         # [policy5, 'est_a2']
-        # [policy6, 'rrtbi_a2']
-        [policy4, 'model a1'],
+        [policy6, 'rrtbi_a2']
+        # [policy4, 'model a1'],
         # [policy4, 'model_b2']
         # [policy2, 'balltree'],
         # [policy3, 'dynamicdomain']
@@ -123,17 +125,17 @@ if __name__ == '__main__':
 
 
 
-    # for rrt_connect
-    feat = get_feat_flytrap
-    num_feat = 1
+    # # for rrt_connect
+    # feat = get_feat_flytrap
+    # num_feat = 1
 
     # # for est
     # feat = get_feat_flytrap_est
     # num_feat = 2
 
-    # # for rrt bi
-    # feat = get_feat_flytrap_bi
-    # num_feat = 1
+    # for rrt bi
+    feat = get_feat_flytrap_bi
+    num_feat = 1
 
 
 
@@ -193,9 +195,9 @@ if __name__ == '__main__':
 
     file = open(args.output, 'w')
 
-    env = RRTConnectEnv(config, data_dict)
+    # env = RRTConnectEnv(config, data_dict)
     # env = ESTEnv(config, data_dict)
-    # env = RRTBiEnv(config, data_dict)
+    env = RRTBiEnv(config, data_dict)
 
     for policy, policyname in policies:
         test(env, policy, policyname, niter, file)

@@ -1,15 +1,15 @@
-model a1
+rrtbi_a2
 ===================
-Mean Reward: -3868.102999999999
-Std Reward: 1204.6457694529954
-Mean Num Nodes: 756.4
-Std Num Nodes: 210.49094992421882
-Mean Num Collision Checks: 2775.6
-Std Num Collision Checks: 893.5584144307522
-Mean Path Length: 81.05729583527143
-Std Path Length: 11.98776337852792
-Mean Num Samples: 33710.3
-Std Num Samples: 10682.604486266448
+Mean Reward: -9306.739999999996
+Std Reward: 5104.755281993445
+Mean Num Nodes: 2159.0
+Std Num Nodes: 1110.874970462473
+Mean Num Collision Checks: 6925.1
+Std Num Collision Checks: 3864.638985726868
+Mean Path Length: 67.17152123630805
+Std Path Length: 12.509545743298537
+Mean Num Samples: 22464.0
+Std Num Samples: 12944.218415956986
 
 
 

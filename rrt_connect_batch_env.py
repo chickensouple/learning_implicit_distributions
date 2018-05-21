@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 from utils import *
 from itertools import compress
-
+import time
 
 class ExtendState(object):
     TRAPPED = 0
@@ -116,7 +116,8 @@ if __name__ == '__main__':
 
     policy = Policy(1)
 
-    policy.load_model('data/model_envA1.ckpt')
+    # policy.load_model('data/model_envA1.ckpt')
+    policy.load_model('good_models/models/model_envA1/model_envA1.ckpt')
 
     feat = get_feat_flytrap
     num_feat = 1
@@ -140,8 +141,12 @@ if __name__ == '__main__':
     rrt = RRTConnectBatchEnv(config, data_dict)
     rrt.run(policy)
 
-    for i in tqdm(range(10)):
+
+    start = time.time()
+    for i in tqdm(range(100)):
         rrt.run(policy)
+    end = time.time()
+    print("Time: " + str(end - start))
 
     rrt.show()
     plt.show()
