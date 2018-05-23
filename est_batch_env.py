@@ -143,7 +143,7 @@ class ESTBatchEnv(object):
     def run(self, policy):
         self.reset()
         random_sample_list = [[], []]
-        num_batch_samples = 1
+        num_batch_samples = 20
 
         count = 0
         while not self.found_path:
@@ -179,9 +179,11 @@ class ESTBatchEnv(object):
 
             self.__run(rand_node, rand_node_idx)
 
+            self.tree_idx = 1 - self.tree_idx
+
             count += 1
 
-            # if count % 10 == 0:
+            # if count % 100 == 0:
             #     self.show()
             #     plt.show(block=False)
             #     plt.pause(0.1)
@@ -229,16 +231,16 @@ if __name__ == '__main__':
     import time
     from tqdm import tqdm
 
-    # policy = Policy(2)
-    # policy.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
+    policy = Policy(2)
+    policy.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
 
-    policy = DefaultPolicy()
+    # policy = DefaultPolicy()
 
     feat = get_feat_flytrap_est
     num_feat = 2
 
     np.random.seed(0)
-    l2_data_dict = generate_data('fly_trap_fixed_a')
+    l2_data_dict = generate_data('fly_trap_fixed_a_test')
     l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
     l2_goal = l2_goal_region
     l2_config = {'collision_check': map_collision_check,
@@ -256,9 +258,12 @@ if __name__ == '__main__':
     rrt = ESTBatchEnv(config, data_dict)
     rrt.run(policy)
 
-    # for i in tqdm(range(10)):
-    #     rrt.run(policy)
-
+    start = time.time()
+    for i in tqdm(range(100)):
+        rrt.run(policy)
+    end = time.time()
+    print("Time: " + str(end - start))
+    
     rrt.show()
     plt.show()
 

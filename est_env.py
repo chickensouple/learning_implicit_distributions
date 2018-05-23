@@ -251,7 +251,7 @@ if __name__ == '__main__':
         
         idx += 1
 
-        # if idx % 1 == 0:
+        # if idx % 10 == 0:
         #     rrt.show()
         #     plt.show(block=False)
         #     plt.pause(0.1)
