@@ -143,13 +143,18 @@ class ESTBatchEnv(object):
     def run(self, policy):
         self.reset()
         random_sample_list = [[], []]
-        num_batch_samples = 100
+        num_batch_samples = 1
 
+        count = 0
         while not self.found_path:
+            num_tree_samples = len(self.trees[0].node_states) + len(self.trees[1].node_states)
+            num_sample = min(num_batch_samples, num_tree_samples)
+
             while len(random_sample_list[self.tree_idx]) == 0:
                 feat_list = []
                 sample_list = []
-                for i in range(num_batch_samples):
+
+                for i in range(num_sample):
                     sample_idx = self._sample_node()
 
                     feat = self.config['feat'](sample_idx, 
@@ -173,6 +178,13 @@ class ESTBatchEnv(object):
             rand_node = self.trees[self.tree_idx].node_states[rand_node_idx]
 
             self.__run(rand_node, rand_node_idx)
+
+            count += 1
+
+            # if count % 10 == 0:
+            #     self.show()
+            #     plt.show(block=False)
+            #     plt.pause(0.1)
 
 
     def get_path(self):
@@ -217,10 +229,10 @@ if __name__ == '__main__':
     import time
     from tqdm import tqdm
 
-    policy = Policy(2)
+    # policy = Policy(2)
+    # policy.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
 
-    # policy.load_model('data/model_envA1.ckpt')
-    policy.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
+    policy = DefaultPolicy()
 
     feat = get_feat_flytrap_est
     num_feat = 2
@@ -231,7 +243,7 @@ if __name__ == '__main__':
     l2_goal = l2_goal_region
     l2_config = {'collision_check': map_collision_check,
               'random_sample': l2_random_sampler,
-              'steer': holonomic_steer,
+              'steer': partial(holonomic_steer, extend_length=5.),
               'dist': l2_dist,
               'goal_region': l2_goal,
               'feat': feat,

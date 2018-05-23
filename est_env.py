@@ -221,7 +221,7 @@ if __name__ == '__main__':
     import time
 
     np.random.seed(0)
-    l2_data_dict = generate_data('empty', dubins=False)
+    l2_data_dict = generate_data('fly_trap_fixed_a_test', dubins=False)
     l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
     l2_goal = l2_goal_region
     l2_config = {'collision_check': map_collision_check,
@@ -236,8 +236,10 @@ if __name__ == '__main__':
     rrt = ESTEnv(l2_config, l2_data_dict)
     # policy = BallTreePolicy()
     # policy = DynamicDomainPolicy()
-    policy = DefaultPolicy()
-    # policy = Policy(l2_config['num_feat'])
+    # policy = DefaultPolicy()
+    policy = Policy(l2_config['num_feat'])
+    policy.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
+
 
     obs = rrt.reset()
     done = False
@@ -249,10 +251,10 @@ if __name__ == '__main__':
         
         idx += 1
 
-        if idx % 1 == 0:
-            rrt.show()
-            plt.show(block=False)
-            plt.pause(0.1)
+        # if idx % 1 == 0:
+        #     rrt.show()
+        #     plt.show(block=False)
+        #     plt.pause(0.1)
 
         if done:
             break

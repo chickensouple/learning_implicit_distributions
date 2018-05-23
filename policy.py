@@ -11,6 +11,9 @@ class DefaultPolicy(object):
     def get_action(self, obs):
         return 1
 
+    def get_action_multiple(self, obs):
+        return np.ones(obs.shape[0], dtype=np.bool)
+
     def get_actions(self, obs):
         return np.ones(obs.shape[0], dtype=np.bool)
 
