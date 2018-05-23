@@ -171,7 +171,7 @@ def get_feat_default(point, tree, map_info):
 def l2_dist(node_from, node_to):
     return np.linalg.norm(node_from - node_to, axis=1)
 
-def holonomic_steer(node_from, node_to, extend_length=1.5, discrete=0.2):
+def holonomic_steer(node_from, node_to, extend_length=1.5, discrete=0.01):
     diff = node_to - node_from
     diff_norm = np.linalg.norm(diff)
     if diff_norm < 1e-6:

@@ -72,6 +72,8 @@ class Tree(object):
         return path
 
     def closest_idx(self, node, dist, return_dist=False):
+        
+        # print(np.array(self.node_states))
         dists = dist(np.array(self.node_states), node)
 
         idx = np.argmin(dists)

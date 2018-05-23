@@ -9,7 +9,7 @@ class CartPole(ModelBase):
     where x is location on track
     theta is angle of pendulum (0 is pointing downwards) and goes counterclockwise
     """
-    def __init__(self, mass_cart=1., length=1., mass_pendulum=0.2, max_force=1., **kwargs):
+    def __init__(self, mass_cart=1., length=1., mass_pendulum=0.2, max_force=10., **kwargs):
         """
         Initializes a Cart Pole
         

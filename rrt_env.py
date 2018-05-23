@@ -4,12 +4,7 @@ import tensorflow as tf
 import numpy as np
 from utils import *
 
-class ExtendState(object):
-    TRAPPED = 0
-    ADVANCED = 1
-    REACHED = 2
-
-class RRTConnectEnv(object):
+class RRTEnv(object):
     def __init__(self, config, map_info):
         self.config = config
         self.map_info = map_info
@@ -34,25 +29,14 @@ class RRTConnectEnv(object):
         closest_idx = self.tree.closest_idx(rand_node, self.config['dist'])
         closest_node = self.tree.node_states[closest_idx]
 
-        state, path = self.extend(closest_node, rand_node, self.map_info)
-        while state == ExtendState.ADVANCED:
-            new_node = path[-1]
+        collision, path = self.extend(closest_node, rand_node, self.map_info)
+        new_node = path[-1]
+
+        if not collision:
             self.tree.insert_node(new_node, path, closest_idx)
 
             if self.config['goal_region'](new_node, self.map_info['goal']):
                 self.found_path = True
-                break
-
-            closest_node = new_node
-            closest_idx = len(self.tree.node_states) - 1
-            state, path = self.extend(closest_node, rand_node, self.map_info)
-
-        if state == ExtendState.REACHED:
-            new_node = path[-1]
-            self.tree.insert_node(new_node, path, closest_idx)
-            if self.config['goal_region'](new_node, self.map_info['goal']):
-                self.found_path = True
-
 
     def extend(self, node_from, node_to, map_info):
         path, path_cost = self.config['steer'](node_from, node_to)
@@ -60,14 +44,8 @@ class RRTConnectEnv(object):
 
         collision, num_checks = self.config['collision_check'](map_info, path, True)
         self.num_collision_checks += num_checks
-        if collision:
-            return ExtendState.TRAPPED, path
+        return collision, path
 
-        dist = self.config['dist'](np.array([new_node]), node_to)
-        if dist < 1e-2:
-            return ExtendState.REACHED, path
-        else: 
-            return ExtendState.ADVANCED, path
 
     def step(self, action):
         if self.found_path:
@@ -88,6 +66,9 @@ class RRTConnectEnv(object):
         reward += -(self.num_collision_checks - prev_num_coll_checks)
 
         self.samples_drawn += 1
+
+        closest_idx, dist = self.tree.closest_idx(self.map_info['goal'], self.config['dist'], return_dist=True)
+        print("len: " + str(len(self.tree.node_states)) + "\tdist: " + str(dist))
 
         return self.node_feat, reward, self.found_path, None
 
@@ -135,12 +116,8 @@ if __name__ == '__main__':
     #           'feat': get_feat_flytrap,
     #           'num_feat': 1}
 
-    # rrt = RRTConnectEnv(l2_config, l2_data_dict)
-    # # policy = BallTreePolicy()
-    # # policy = DynamicDomainPolicy()
-    # # policy = DefaultPolicy()
-    # policy = Policy(l2_config['num_feat'])
-    
+    # rrt = RRTEnv(l2_config, l2_data_dict)
+    # policy = DefaultPolicy()
 
     # obs = rrt.reset()
     # done = False
@@ -228,7 +205,7 @@ if __name__ == '__main__':
               'feat': cartpole.cartpole_feat,
               'num_feat': 1}
 
-    rrt = RRTConnectEnv(l2_config, data_dict)
+    rrt = RRTEnv(l2_config, data_dict)
     policy = DefaultPolicy()
 
     obs = rrt.reset()
