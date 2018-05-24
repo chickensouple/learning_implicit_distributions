@@ -14,14 +14,18 @@ def pendulum_generate_map():
 
     return map_dict
 
-def pendulum_sample(map_info):
-    x = np.random.random_sample((2, 1))
-    x[0] = x[0] * 2*np.pi
-    x[1] = x[1] * 4 - 2
+def pendulum_sample(map_info, eps):
+    rand = np.random.random()
+    if rand > eps:
+        x = np.random.random_sample((2, 1))
+        x[0] = x[0] * 2*np.pi
+        x[1] = x[1] * 4 - 2
+    else:
+        x = map_info['goal']
     return x
 
-def pendulum_collision_check(map_info, node):
-    return False
+def pendulum_collision_check(map_info, node, return_num_coll):
+    return False, 0
 
 def pendulum_steer(node_from, node_to, extend_length=1.5, discrete=0.2):
     global pendulum
@@ -46,7 +50,7 @@ def pendulum_steer(node_from, node_to, extend_length=1.5, discrete=0.2):
             dt=np.ones(num_dt) * dt)
         xf = path[:, -1]
 
-        dist = np.linalg.norm(xf - node_to.squeeze())
+        dist = pendulum_dist(np.array([xf]).T, node_to)
 
         if dist < min_dist:
             min_dist = dist
@@ -57,18 +61,45 @@ def pendulum_steer(node_from, node_to, extend_length=1.5, discrete=0.2):
         path_list.append(np.array([min_path[:, i]]).T)
     return path_list, path.shape[1]
 
-
+def angle_dist(diff):
+    while np.any(diff >= np.pi):
+        diff[diff >= np.pi] -= 2*np.pi
+    while np.any(diff < -np.pi):
+        diff[diff < np.pi] += 2*np.pi
+    return diff
 
 def pendulum_dist(node_from, node_to):
     node_from_cp = np.squeeze(node_from).T
     node_from_cp = np.reshape(node_from_cp, (2, -1))
-    pass
+
+    diffs = node_from_cp - node_to
+    angle_diffs = angle_dist(diffs[0, :])
+    vel_diffs = diffs[1, :]
+
+
+    dists = np.sqrt(np.square(angle_diffs) + np.square(vel_diffs))
+
+    return dists
+
 
 def pendulum_goal(a, b):
-    pass
+    diff = a - b
+
+    angle_diff = np.abs(angle_dist(diff[0]))
+    angular_vel_diff = np.abs(diff[1])
+
+    if angle_diff < 0.1 and angular_vel_diff < 0.1:
+        return True
+    else:
+        return False
+
+
 
 def pendulum_feat(a, b, c):
+    return np.array([0])
     pass
+
+
 
 
 

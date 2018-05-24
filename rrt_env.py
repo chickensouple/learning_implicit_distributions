@@ -96,96 +96,6 @@ class RRTEnv(object):
 
 
 if __name__ == '__main__':
-    # import matplotlib.pyplot as plt
-    # from generate_data import generate_data
-    # from functools import partial
-    # from utils import *
-    # from policy import *
-    # from tqdm import tqdm
-    # import time
-
-    # np.random.seed()
-    # l2_data_dict = generate_data('rooms', dubins=False)
-    # l2_random_sampler = partial(map_sampler_goal_bias, eps=0.1)
-    # l2_goal = l2_goal_region
-    # l2_config = {'collision_check': map_collision_check,
-    #           'random_sample': l2_random_sampler,
-    #           'steer': holonomic_steer,
-    #           'dist': l2_dist,
-    #           'goal_region': l2_goal,
-    #           'feat': get_feat_flytrap,
-    #           'num_feat': 1}
-
-    # rrt = RRTEnv(l2_config, l2_data_dict)
-    # policy = DefaultPolicy()
-
-    # obs = rrt.reset()
-    # done = False
-
-    # idx = 0
-    # while not done:
-    #     action = policy.get_action(obs)
-    #     obs, reward, done, _ = rrt.step(action)
-        
-    #     idx += 1
-
-
-    # rrt.show()
-    # plt.show()
-
-
-
-
-
-    # import arm
-    # qstart = np.array([90, 10, 0, -150, 0, 0, 0]) * math.pi / 180
-    # qgoal = np.array([20, -15, 0, 0, 0, 10, 0]) * math.pi / 180
-
-    # pointcloud = {'points': np.array([[0, 0, 0]]), 'means': 0, 'sigmas': 0}
-    
-    # arm_data_dict = arm.arm_map_create(pointcloud, qstart, qgoal)
-    # arm_random_sampler = partial(arm.arm_random_sample, eps=0.1)
-    # arm_config = {'collision_check': arm.arm_collision_check,
-    #               'random_sample': arm_random_sampler,
-    #               'steer': arm.arm_steer,
-    #               'dist': arm.arm_dist_func,
-    #               'goal_region': arm.arm_goal_region,
-    #               'feat': arm.arm_feat_single,
-    #               'num_feat': 1}
-
-    # rrt = RRTConnectEnv(arm_config, arm_data_dict)
-    # policy = DefaultPolicy()
-
-
-    # obs = rrt.reset()
-    # done = False
-    # idx = 0
-    # while not done:
-    #     action = policy.get_action(obs)
-    #     obs, reward, done, _ = rrt.step(action)
-        
-    #     idx += 1
-    
-    # if not rrt.found_path:
-    #     print("Path Not Found")
-
-
-    # path, cost = rrt.get_path()
-    # print("Cost: " + str(cost))
-    # print("Path Len: " + str(len(path)))
-    # print("Path: " + str(path))
-    # armv = arm.ArmVisualize()
-    # for node in path:
-    #     q = rrt.tree.node_states[node]
-    #     armv.plot(q)
-    #     plt.show(block=False)
-    #     plt.pause(0.1)
-    #     raw_input("Press Enter to Continue:")
-    # plt.show()
-
-
-
-
     import matplotlib.pyplot as plt
     from generate_data import generate_data
     from functools import partial
@@ -193,16 +103,18 @@ if __name__ == '__main__':
     from policy import *
     from tqdm import tqdm
     import time
-    import cartpole
+    import pendulum
 
     np.random.seed()
-    data_dict = cartpole.cartpole_generate_map()
-    l2_config = {'collision_check': cartpole.cartpole_collision_check,
-              'random_sample': cartpole.cartpole_sample,
-              'steer': cartpole.cartpole_steer,
-              'dist': cartpole.cartpole_dist,
-              'goal_region': cartpole.cartpole_goal,
-              'feat': cartpole.cartpole_feat,
+    data_dict = pendulum.pendulum_generate_map()
+
+    sampler = partial(pendulum.pendulum_sample, eps=0.1)
+    l2_config = {'collision_check': pendulum.pendulum_collision_check,
+              'random_sample': sampler,
+              'steer': pendulum.pendulum_steer,
+              'dist': pendulum.pendulum_dist,
+              'goal_region': pendulum.pendulum_goal,
+              'feat': pendulum.pendulum_feat,
               'num_feat': 1}
 
     rrt = RRTEnv(l2_config, data_dict)
@@ -217,6 +129,43 @@ if __name__ == '__main__':
         obs, reward, done, _ = rrt.step(action)
         idx += 1
 
-    rrt.show()
-    plt.show()
+    # rrt.show()
+    # plt.show()
+
+
+
+    # import matplotlib.pyplot as plt
+    # from generate_data import generate_data
+    # from functools import partial
+    # from utils import *
+    # from policy import *
+    # from tqdm import tqdm
+    # import time
+    # import cartpole
+
+    # np.random.seed()
+    # data_dict = cartpole.cartpole_generate_map()
+    # l2_config = {'collision_check': cartpole.cartpole_collision_check,
+    #           'random_sample': cartpole.cartpole_sample,
+    #           'steer': cartpole.cartpole_steer,
+    #           'dist': cartpole.cartpole_dist,
+    #           'goal_region': cartpole.cartpole_goal,
+    #           'feat': cartpole.cartpole_feat,
+    #           'num_feat': 1}
+
+    # rrt = RRTEnv(l2_config, data_dict)
+    # policy = DefaultPolicy()
+
+    # obs = rrt.reset()
+    # done = False
+
+    # idx = 0
+    # while not done:
+    #     action = policy.get_action(obs)
+    #     obs, reward, done, _ = rrt.step(action)
+    #     idx += 1
+
+    # rrt.show()
+    # plt.show()
+
 
