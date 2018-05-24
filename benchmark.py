@@ -113,7 +113,7 @@ if __name__ == '__main__':
     # policy7.load_model('good_models/models/model_envArm3.ckpt/model_envArm3.ckpt.140.ckpt')
 
     policies = [\
-        # [policy1, 'default'],
+        [policy1, 'default'],
         # [policy7, 'model_Arm3']
         [policy5, 'est_a2']
         # [policy6, 'rrtbi_a2']

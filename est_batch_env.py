@@ -143,7 +143,7 @@ class ESTBatchEnv(object):
     def run(self, policy):
         self.reset()
         random_sample_list = [[], []]
-        num_batch_samples = 20
+        num_batch_samples = 2 
 
         count = 0
         while not self.found_path:
@@ -232,7 +232,8 @@ if __name__ == '__main__':
     from tqdm import tqdm
 
     policy = Policy(2)
-    policy.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
+    #policy.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
+    policy.load_model('data/model_envA2_est.ckpt.0.ckpt')
 
     # policy = DefaultPolicy()
 
@@ -256,10 +257,9 @@ if __name__ == '__main__':
     data_dict = l2_data_dict
 
     rrt = ESTBatchEnv(config, data_dict)
-    rrt.run(policy)
 
     start = time.time()
-    for i in tqdm(range(100)):
+    for i in tqdm(range(10)):
         rrt.run(policy)
     end = time.time()
     print("Time: " + str(end - start))

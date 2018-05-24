@@ -1,0 +1,30 @@
+default
+===================
+Mean Reward: -3077.389999999999
+Std Reward: 0.0
+Mean Num Nodes: 1173.0
+Std Num Nodes: 0.0
+Mean Num Collision Checks: 1632.0
+Std Num Collision Checks: 0.0
+Mean Path Length: 67.76278631798841
+Std Path Length: 0.0
+Mean Num Samples: 27439.0
+Std Num Samples: 0.0
+
+
+
+est_a2
+===================
+Mean Reward: nan
+Std Reward: nan
+Mean Num Nodes: nan
+Std Num Nodes: nan
+Mean Num Collision Checks: nan
+Std Num Collision Checks: nan
+Mean Path Length: nan
+Std Path Length: nan
+Mean Num Samples: nan
+Std Num Samples: nan
+
+
+
