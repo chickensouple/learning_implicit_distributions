@@ -102,20 +102,20 @@ if __name__ == '__main__':
     # policy4.load_model('good_models/models/model_envA1/model_envA1.ckpt')
     # policy4.load_model('data/model_envB3.ckpt')
 
-    policy5 = Policy(2)
-    policy5.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
+    # policy5 = Policy(2)
+    # policy5.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.20.ckpt')
     # policy5.load_model('good_models/models/model_envA2_est/model_envA2_est.ckpt.0.ckpt')
 
     # policy6 = Policy(1) 
     # policy6.load_model('good_models/models/model_envA2_bi/model_envA2_bi.ckpt.480.ckpt')
 
-    # policy7 = Policy(4)
-    # policy7.load_model('good_models/models/model_envArm3.ckpt/model_envArm3.ckpt.140.ckpt')
+    policy7 = Policy(4)
+    policy7.load_model('good_models/models/model_envArm3.ckpt/model_envArm3.ckpt.140.ckpt')
 
     policies = [\
         [policy1, 'default'],
-        # [policy7, 'model_Arm3']
-        [policy5, 'est_a2']
+        [policy7, 'model_Arm3']
+        # [policy5, 'est_a2']
         # [policy6, 'rrtbi_a2']
         # [policy4, 'model a1'],
         # [policy4, 'model_b2']
@@ -129,9 +129,9 @@ if __name__ == '__main__':
     # feat = get_feat_flytrap
     # num_feat = 1
 
-    # for est
-    feat = get_feat_flytrap_est
-    num_feat = 2
+    # # for est
+    # feat = get_feat_flytrap_est
+    # num_feat = 2
 
     # # for rrt bi
     # feat = get_feat_flytrap_bi
@@ -196,8 +196,8 @@ if __name__ == '__main__':
     file = open(args.output, 'w')
 
     # env = RRTConnectEnv(config, data_dict)
-    env = ESTEnv(config, data_dict)
-    # env = RRTBiEnv(config, data_dict)
+    # env = ESTEnv(config, data_dict)
+    env = RRTBiEnv(config, data_dict)
 
     for policy, policyname in policies:
         test(env, policy, policyname, niter, file)

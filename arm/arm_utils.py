@@ -33,7 +33,7 @@ def arm_goal_region(point, goal):
 
     return dist < 0.2
 
-def arm_steer(node_from, node_to, discr=0.08, delta_lim=0.5):
+def arm_steer(node_from, node_to, discr=0.08, delta_lim=0.01):
     delta = constrain_angles_two_pi(node_to - node_from)
     mask = delta > np.pi
     delta[mask] = -(2*np.pi - delta[mask])
