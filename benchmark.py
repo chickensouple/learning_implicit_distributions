@@ -5,10 +5,12 @@ from generate_data import generate_data
 from rrt_connect_env import RRTConnectEnv
 from rrt_bi_env import RRTBiEnv
 from est_env import ESTEnv
+from rrt_env import RRTEnv
 from run_environment import RunEnvironment
 from policy import *
 import time
 from tqdm import tqdm
+import pendulum
 
 import cProfile
 
@@ -32,8 +34,8 @@ def test(env, policy, policyname, niter, file):
             continue
 
         rewards.append(np.sum(reward))
-        # num_nodes.append(len(env.tree.node_states))
-        num_nodes.append(len(env.trees[0].node_states) + len(env.trees[1].node_states))
+        num_nodes.append(len(env.tree.node_states))
+        # num_nodes.append(len(env.trees[0].node_states) + len(env.trees[1].node_states))
         num_collision_checks.append(env.num_collision_checks)
         _, path_len = env.get_path()
         path_lengths.append(path_len)
@@ -88,12 +90,12 @@ if __name__ == '__main__':
         help='output file to write to')
     parser.add_argument('--env', dest='env', action='store',
         required=True,
-        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'fly_trap_fixed_a_test', 'fly_trap_fixed_b_test', 'empty', 'arm'],
+        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'fly_trap_fixed_a_test', 'fly_trap_fixed_b_test', 'empty', 'arm', 'pendulum'],
         help="environment type")
     args = parser.parse_args(sys.argv[1:])
 
 
-    niter = 10
+    niter = 100
 
     policy1 = DefaultPolicy()
     policy2 = BallTreePolicy()
@@ -109,12 +111,12 @@ if __name__ == '__main__':
     # policy6 = Policy(1) 
     # policy6.load_model('good_models/models/model_envA2_bi/model_envA2_bi.ckpt.480.ckpt')
 
-    policy7 = Policy(4)
-    policy7.load_model('good_models/models/model_envArm3.ckpt/model_envArm3.ckpt.140.ckpt')
+    # policy7 = Policy(4)
+    # policy7.load_model('good_models/models/model_envArm3.ckpt/model_envArm3.ckpt.140.ckpt')
 
     policies = [\
         [policy1, 'default'],
-        [policy7, 'model_Arm3']
+        # [policy7, 'model_Arm3']
         # [policy5, 'est_a2']
         # [policy6, 'rrtbi_a2']
         # [policy4, 'model a1'],
@@ -174,6 +176,20 @@ if __name__ == '__main__':
                       'feat': arm.arm_feat_bi}
         config = arm_config
         data_dict = arm_data_dict
+    elif args.env == 'pendulum':
+
+        data_dict = pendulum.pendulum_generate_map(map_type='test')
+
+
+        sampler = partial(pendulum.pendulum_sample, eps=0.1)
+        config = {'collision_check': pendulum.pendulum_collision_check,
+                  'random_sample': sampler,
+                  'steer': pendulum.pendulum_steer,
+                  'dist': pendulum.pendulum_dist,
+                  'goal_region': pendulum.pendulum_goal,
+                  'feat': pendulum.pendulum_feat,
+                  'num_feat': 2}
+
     else:
         np.random.seed(0)
         l2_data_dict = generate_data(args.env)
@@ -197,7 +213,8 @@ if __name__ == '__main__':
 
     # env = RRTConnectEnv(config, data_dict)
     # env = ESTEnv(config, data_dict)
-    env = RRTBiEnv(config, data_dict)
+    # env = RRTBiEnv(config, data_dict)
+    env = RRTEnv(config, data_dict)
 
     for policy, policyname in policies:
         test(env, policy, policyname, niter, file)

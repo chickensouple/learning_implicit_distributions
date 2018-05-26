@@ -34,7 +34,7 @@ def pendulum_collision_check(map_info, node, return_num_coll):
 
 def pendulum_steer(node_from, node_to, extend_length=1.5, discrete=0.2):
     global pendulum
-    num_tries = 20
+    num_tries = 200
 
     min_path = None
     min_dist = float('inf')
