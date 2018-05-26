@@ -5,12 +5,17 @@ from ode_numerical import *
 
 pendulum = Pendulum()
 
-def pendulum_generate_map():
-    balls = []
+def pendulum_generate_map(map_type='train'):
+    if map_type == 'train':
+        map_dict = {}
+        map_dict['start'] = np.array([[0, 0]]).T
+        map_dict['goal'] = np.array([[np.pi, 0]]).T
 
-    map_dict = {}
-    map_dict['start'] = np.array([[0, 0]]).T
-    map_dict['goal'] = np.array([[np.pi, 0]]).T
+    elif map_type == 'test':
+        map_dict = {}
+        map_dict['start'] = np.array([[0, 0]]).T
+        map_dict['goal'] = np.array([[np.pi, 0]]).T
+
 
     return map_dict
 
@@ -95,9 +100,14 @@ def pendulum_goal(a, b):
 
 
 
-def pendulum_feat(a, b, c):
-    return np.array([0])
-    pass
+def pendulum_feat(node, tree, map_dict):
+    diff = node - map_dict['goal']
+    diff[0] = angle_dist(diff[0])
+
+    diff = diff.squeeze()
+
+    return diff
+
 
 
 

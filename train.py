@@ -15,6 +15,7 @@ from utils import *
 from run_environment import RunEnvironment
 from policy import *
 from baseline import Baseline
+from rrt_env import RRTEnv
 from rrt_connect_env import RRTConnectEnv
 from rrt_bi_env import RRTBiEnv
 from est_env import ESTEnv
@@ -185,6 +186,7 @@ if __name__ == '__main__':
     import argparse
     import sys
     import pickle
+    import pendulum
 
 
     parser = argparse.ArgumentParser(description="Reinforcement Training of Implicit Sampling")
@@ -192,15 +194,19 @@ if __name__ == '__main__':
     parser.add_argument('--store', dest='store_file', action='store', type=str, default=None)
     parser.add_argument('--env', dest='env', action='store', type=str, default=None,
         required=True,
-        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'empty', 'arm'])
+        choices=['fly_trap_fixed_a', 'fly_trap_fixed_b', 'empty', 'arm', 'pendulum'])
     parser.add_argument('--planner', dest='planner', action='store', type=str, 
         default='rrt_connect',
-        choices=['rrt_connect', 'rrt_bi', 'est'])
+        choices=['rrt_connect', 'rrt_bi', 'est', 'rrt'])
     parser.add_argument('--type', dest='type', action='store',
         required=True,
         choices=['train', 'plot_feat', 'plot_reward', 'plot_value'],
         help="what you want the script to do")
     args = parser.parse_args(sys.argv[1:])
+
+
+
+
 
     if args.env == 'fly_trap_fixed_a':
         if args.planner == 'rrt_connect':
@@ -212,6 +218,7 @@ if __name__ == '__main__':
         elif args.planner == 'est':
             num_feats = 2
             feat_func = get_feat_flytrap_est
+
 
         np.random.seed(0)
         data_dict = generate_data('fly_trap_fixed_a')
@@ -312,6 +319,21 @@ if __name__ == '__main__':
                       'num_feat': num_feats}
             data_dict_list.append(data_dict)
             config_list.append(config)
+    elif args.env == 'pendulum':
+        feat_func = pendulum.pendulum_feat
+        num_feats = 2
+        sampler = partial(pendulum.pendulum_sample, eps=0.1)
+    
+        config = {'collision_check': pendulum.pendulum_collision_check,
+                    'random_sample': sampler,
+                    'steer': pendulum.pendulum_steer,
+                    'dist': pendulum.pendulum_dist,
+                    'goal_region': pendulum.pendulum_goal,
+                    'feat': pendulum.pendulum_feat,
+                    'num_feat': num_feats}
+
+        data_dict_list = [pendulum.pendulum_generate_map('train')]
+        config_list = [config]
     else:
         raise Exception('Not a valid Environment')
 
@@ -326,6 +348,8 @@ if __name__ == '__main__':
             env = RRTBiEnv(config, data_dict)
         elif args.planner == 'est':
             env = ESTEnv(config, data_dict)
+        elif args.planner == 'rrt':
+            env = RRTEnv(config, data_dict)
         else:
             raise Exception('not valid environment type')
         env_list.append(env)

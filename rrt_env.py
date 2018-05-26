@@ -61,23 +61,27 @@ class RRTEnv(object):
             self.tree, self.map_info)
 
         reward = 0
-        reward += -0.01
+        reward += -0.1
         reward += -(len(self.tree.node_states) - prev_node_states)
-        reward += -(self.num_collision_checks - prev_num_coll_checks)
+        # reward += -(self.num_collision_checks - prev_num_coll_checks)
+        reward += (action == 1) * (-5)
 
         self.samples_drawn += 1
 
         closest_idx, dist = self.tree.closest_idx(self.map_info['goal'], self.config['dist'], return_dist=True)
-        print("len: " + str(len(self.tree.node_states)) + "\tdist: " + str(dist))
+        # print("len: " + str(len(self.tree.node_states)) + "\tdist: " + str(dist))
 
         return self.node_feat, reward, self.found_path, None
 
     def show(self):
         plt.cla()
         if self.found_path:
-            self.tree.show(im=self.map_info['map'], goal=self.map_info['goal'], path_idx=len(self.tree.node_states)-1)
+            # self.tree.show(im=self.map_info['map'], goal=self.map_info['goal'], path_idx=len(self.tree.node_states)-1)
+            self.tree.show(goal=self.map_info['goal'], path_idx=len(self.tree.node_states)-1)
+
         else:
-            self.tree.show(im=self.map_info['map'], goal=self.map_info['goal'])
+            # self.tree.show(im=self.map_info['map'], goal=self.map_info['goal'])
+            self.tree.show(goal=self.map_info['goal'])
 
     def get_path(self):
         if not self.found_path:
@@ -115,10 +119,11 @@ if __name__ == '__main__':
               'dist': pendulum.pendulum_dist,
               'goal_region': pendulum.pendulum_goal,
               'feat': pendulum.pendulum_feat,
-              'num_feat': 1}
+              'num_feat': 2}
 
     rrt = RRTEnv(l2_config, data_dict)
-    policy = DefaultPolicy()
+    # policy = DefaultPolicy()
+    policy = Policy(l2_config['num_feat'])
 
     obs = rrt.reset()
     done = False
@@ -128,6 +133,11 @@ if __name__ == '__main__':
         action = policy.get_action(obs)
         obs, reward, done, _ = rrt.step(action)
         idx += 1
+
+    # path = rrt.get_path()
+    # rrt.show()
+    # plt.show()
+
 
     # rrt.show()
     # plt.show()
